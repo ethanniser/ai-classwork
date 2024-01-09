@@ -109,7 +109,7 @@ class BTree {
 
         // Prune if beta <= alpha
         if (currentBeta <= alpha) {
-          console.log("PRUNING: ", node.left);
+          console.log("PRUNING: ", node.right);
           return bestVal;
         }
 
