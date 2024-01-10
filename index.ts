@@ -12,7 +12,7 @@ class BTreeNode {
   }
 }
 
-class BTree {
+export class BTree {
   public root: BTreeNode | null;
 
   constructor(root?: BTreeNode) {
@@ -66,60 +66,46 @@ class BTree {
   public alphaBetaSearch(): number {
     function alphaBeta(
       node: BTreeNode,
-      isMaximizingPlayer: boolean,
       alpha: number,
-      beta: number
+      beta: number,
+      player1: boolean
     ): number {
       // Base case (leaf node)
       if (node.left === null && node.right === null) {
-        return node.data!;
+        const data = node.data;
+        if (data === null) throw new Error("Leaf data is null");
+        return player1 ? data : -data;
       }
 
-      if (isMaximizingPlayer) {
-        let bestVal = Number.NEGATIVE_INFINITY;
-        let currentAlpha = alpha;
+      let bestVal = Number.NEGATIVE_INFINITY;
+      let currentAlpha = alpha;
 
-        // Traverse left child
-        bestVal = node.left
-          ? Math.max(bestVal, alphaBeta(node.left, false, currentAlpha, beta))
-          : bestVal;
-        currentAlpha = Math.max(currentAlpha, bestVal);
+      // Traverse left child
+      bestVal = node.left
+        ? // swap alpha + beta and inverse both
+          Math.max(
+            bestVal,
+            -alphaBeta(node.left, -beta, -currentAlpha, !player1)
+          )
+        : bestVal;
+      currentAlpha = Math.max(currentAlpha, bestVal);
 
-        // Prune if beta <= alpha
-        if (beta <= currentAlpha) {
-          console.log("PRUNING: ", node.right);
-          return bestVal;
-        }
-
-        // Traverse right child
-        bestVal = node.right
-          ? Math.max(bestVal, alphaBeta(node.right, false, currentAlpha, beta))
-          : bestVal;
-
-        return bestVal;
-      } else {
-        let bestVal = Number.POSITIVE_INFINITY;
-        let currentBeta = beta;
-
-        // Traverse left child
-        bestVal = node.left
-          ? Math.min(bestVal, alphaBeta(node.left, true, alpha, currentBeta))
-          : bestVal;
-        currentBeta = Math.min(currentBeta, bestVal);
-
-        // Prune if beta <= alpha
-        if (currentBeta <= alpha) {
-          console.log("PRUNING: ", node.right);
-          return bestVal;
-        }
-
-        // Traverse right child
-        bestVal = node.right
-          ? Math.min(bestVal, alphaBeta(node.right, true, alpha, currentBeta))
-          : bestVal;
-
+      // Prune if beta <= alpha
+      if (beta <= currentAlpha) {
+        console.log("PRUNING: ", node.right);
         return bestVal;
       }
+
+      // Traverse right child
+      bestVal = node.right
+        ? // swap alpha + beta and inverse both
+          Math.max(
+            bestVal,
+            -alphaBeta(node.right, -beta, -currentAlpha, !player1)
+          )
+        : bestVal;
+
+      return bestVal;
     }
 
     if (this.root === null) {
@@ -128,9 +114,9 @@ class BTree {
 
     const result = alphaBeta(
       this.root,
-      true,
       Number.NEGATIVE_INFINITY,
-      Number.POSITIVE_INFINITY
+      Number.POSITIVE_INFINITY,
+      true
     );
 
     return result;
@@ -140,16 +126,3 @@ class BTree {
 function randomFromRange(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1) + min);
 }
-
-const tree = BTree.createSetLeaves(4, [-16, -14, 2, -20, -6, 2, 4, -8]);
-
-// console.log(
-//   util.inspect(tree, {
-//     showHidden: false,
-//     depth: null,
-//     colors: true,
-//   })
-// );
-
-console.log(tree.alphaBetaSearch());
-console.log("is it 2?");
