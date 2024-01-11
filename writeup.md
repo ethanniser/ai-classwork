@@ -14,4 +14,6 @@ This is because when `beta <= alpha` it means that the opponent already has an e
 
 Alpha Beta pruning is very dependent on the order of exploration. The same tree traversed in a different order may lead to vastly different oppurtunites for pruning.
 
-The optimal order for the most pruning would be where
+The optimal order for the most pruning would be where the best moves are explored first.
+
+If a cheaper to calculate hueristic exists, it theoretically could be used to sort the exploration order prior to begining the algorithm.
