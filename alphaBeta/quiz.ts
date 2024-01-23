@@ -32,13 +32,6 @@ function alphabeta_eval_inner(
   is_max: boolean,
   bounds: [number, number]
 ): [child_value: number, leaf_count: number] {
-  console.log({
-    node,
-    is_max,
-    bounds,
-    values,
-  });
-
   const children = edges[node];
 
   // Base case: no children (leaf node)
