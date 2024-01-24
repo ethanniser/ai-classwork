@@ -1,70 +1,67 @@
 class PriorityQueue {
-  values: { node: string; priority: number }[];
+  backing: { node: string; priority: number }[];
 
   constructor() {
-    this.values = [];
+    this.backing = [];
   }
 
   enqueue(node: string, priority: number) {
-    this.values.push({ node, priority });
-    // not optimal, but simple
-    this.sort();
+    // TODO
   }
 
-  dequeue() {
-    return this.values.shift();
+  dequeue(): { node: string; priority: number } | undefined {
+    return this.backing[0];
   }
 
-  sort() {
-    this.values.sort((a, b) => a.priority - b.priority);
+  size() {
+    return this.backing.length;
   }
 }
 
 class WeightedGraph {
-  adjacencyList: { [key: string]: { node: string; weight: number }[] };
+  adjacencyList: Map<string, { node: string; weight: number }[]>;
 
   constructor() {
-    this.adjacencyList = {};
+    this.adjacencyList = new Map();
   }
 
   addVertex(vertex: string) {
-    if (!this.adjacencyList[vertex]) {
-      this.adjacencyList[vertex] = [];
+    if (!this.adjacencyList.has(vertex)) {
+      this.adjacencyList.set(vertex, []);
     }
   }
 
   addEdge(vertex1: string, vertex2: string, weight: number) {
-    this.adjacencyList[vertex1].push({ node: vertex2, weight });
-    this.adjacencyList[vertex2].push({ node: vertex1, weight });
+    this.adjacencyList.get(vertex1)?.push({ node: vertex2, weight });
+    this.adjacencyList.get(vertex2)?.push({ node: vertex1, weight });
   }
 
   dijkstra(startVertex: string) {
-    const distances: { [key: string]: number } = {};
-    const previous: { [key: string]: string | null } = {};
+    const distances = new Map<string, number>();
+    const previous = new Map<string, string | null>();
     const priorityQueue = new PriorityQueue();
 
-    for (const vertex in this.adjacencyList) {
+    for (const vertex of this.adjacencyList.keys()) {
       if (vertex === startVertex) {
-        distances[vertex] = 0;
+        distances.set(vertex, 0);
         priorityQueue.enqueue(vertex, 0);
       } else {
-        distances[vertex] = Infinity;
+        distances.set(vertex, Infinity);
         priorityQueue.enqueue(vertex, Infinity);
       }
-      previous[vertex] = null;
+      previous.set(vertex, null);
     }
 
-    while (priorityQueue.values.length > 0) {
+    while (priorityQueue.size() > 0) {
       const currentVertex = priorityQueue.dequeue()!.node;
 
-      if (currentVertex === null) break;
+      for (const neighbor of this.adjacencyList.get(currentVertex) || []) {
+        const potentialDistance =
+          distances.get(currentVertex)! + neighbor.weight;
 
-      for (const neighbor of this.adjacencyList[currentVertex]) {
-        const potentialDistance = distances[currentVertex] + neighbor.weight;
-
-        if (potentialDistance < distances[neighbor.node]) {
-          distances[neighbor.node] = potentialDistance;
-          previous[neighbor.node] = currentVertex;
+        if (potentialDistance < (distances.get(neighbor.node) || Infinity)) {
+          distances.set(neighbor.node, potentialDistance);
+          previous.set(neighbor.node, currentVertex);
           priorityQueue.enqueue(neighbor.node, potentialDistance);
         }
       }
