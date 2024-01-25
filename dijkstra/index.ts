@@ -1,20 +1,79 @@
-class PriorityQueue {
+export class PriorityQueue {
   backing: { node: string; priority: number }[];
 
   constructor() {
     this.backing = [];
   }
 
-  enqueue(node: string, priority: number) {
-    // TODO
-  }
-
-  dequeue(): { node: string; priority: number } | undefined {
-    return this.backing[0];
-  }
-
-  size() {
+  public size() {
     return this.backing.length;
+  }
+
+  public enqueue(node: string, priority: number) {
+    this.backing.push({ node, priority });
+    let index = this.backing.length - 1;
+    this.percolateUp(index);
+  }
+
+  public dequeue(): { node: string; priority: number } | undefined {
+    if (this.backing.length === 0) {
+      return undefined;
+    } else if (this.backing.length === 1) {
+      return this.backing.pop();
+    }
+    const result = this.backing[0];
+    this.backing[0] = this.backing.pop()!;
+    this.percolateDown(0);
+    return result;
+  }
+
+  private percolateUp(index: number) {
+    while (index > 0) {
+      const parentIndex = this.getParentIndex(index);
+      if (this.backing[parentIndex].priority <= this.backing[index].priority) {
+        break;
+      }
+      const temp = this.backing[parentIndex];
+      this.backing[parentIndex] = this.backing[index];
+      this.backing[index] = temp;
+      index = parentIndex;
+    }
+  }
+
+  private percolateDown(index: number) {
+    while (this.getLeftChildIndex(index) < this.backing.length) {
+      let smallerChildIndex = this.getLeftChildIndex(index);
+      if (
+        this.getRightChildIndex(index) < this.backing.length &&
+        this.backing[this.getRightChildIndex(index)].priority <
+          this.backing[smallerChildIndex].priority
+      ) {
+        smallerChildIndex = this.getRightChildIndex(index);
+      }
+
+      if (
+        this.backing[index].priority <= this.backing[smallerChildIndex].priority
+      ) {
+        break;
+      }
+
+      const temp = this.backing[index];
+      this.backing[index] = this.backing[smallerChildIndex];
+      this.backing[smallerChildIndex] = temp;
+      index = smallerChildIndex;
+    }
+  }
+
+  private getParentIndex(index: number) {
+    return Math.floor((index - 1) / 2);
+  }
+
+  private getLeftChildIndex(index: number) {
+    return 2 * index + 1;
+  }
+
+  private getRightChildIndex(index: number) {
+    return 2 * index + 2;
   }
 }
 
@@ -70,27 +129,3 @@ class WeightedGraph {
     return { distances, previous };
   }
 }
-
-// Example usage:
-
-const graph = new WeightedGraph();
-
-graph.addVertex("A");
-graph.addVertex("B");
-graph.addVertex("C");
-graph.addVertex("D");
-graph.addVertex("E");
-graph.addVertex("F");
-
-graph.addEdge("A", "B", 4);
-graph.addEdge("A", "C", 2);
-graph.addEdge("B", "E", 3);
-graph.addEdge("C", "D", 2);
-graph.addEdge("C", "F", 4);
-graph.addEdge("D", "E", 3);
-graph.addEdge("D", "F", 1);
-graph.addEdge("E", "F", 1);
-
-const result = graph.dijkstra("A");
-console.log("Distances:", result.distances);
-console.log("Previous:", result.previous);
