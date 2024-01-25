@@ -77,7 +77,7 @@ export class PriorityQueue {
   }
 }
 
-class WeightedGraph {
+export class WeightedGraph {
   adjacencyList: Map<string, { node: string; weight: number }[]>;
 
   constructor() {
@@ -91,8 +91,15 @@ class WeightedGraph {
   }
 
   addEdge(vertex1: string, vertex2: string, weight: number) {
-    this.adjacencyList.get(vertex1)?.push({ node: vertex2, weight });
-    this.adjacencyList.get(vertex2)?.push({ node: vertex1, weight });
+    // this.adjacencyList.get(vertex1)?.push({ node: vertex2, weight });
+    // this.adjacencyList.get(vertex2)?.push({ node: vertex1, weight });
+    // dont duplicate edges
+    if (!this.adjacencyList.get(vertex1)?.some((v) => v.node === vertex2)) {
+      this.adjacencyList.get(vertex1)?.push({ node: vertex2, weight });
+    }
+    if (!this.adjacencyList.get(vertex2)?.some((v) => v.node === vertex1)) {
+      this.adjacencyList.get(vertex2)?.push({ node: vertex1, weight });
+    }
   }
 
   dijkstra(startVertex: string) {
@@ -114,7 +121,9 @@ class WeightedGraph {
     while (priorityQueue.size() > 0) {
       const currentVertex = priorityQueue.dequeue()!.node;
 
-      for (const neighbor of this.adjacencyList.get(currentVertex) || []) {
+      for (const neighbor of this.adjacencyList
+        .get(currentVertex)
+        ?.filter((_) => _.node !== startVertex) || []) {
         const potentialDistance =
           distances.get(currentVertex)! + neighbor.weight;
 

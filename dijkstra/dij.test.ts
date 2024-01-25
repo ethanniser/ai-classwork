@@ -1,5 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import { PriorityQueue } from ".";
+import { PriorityQueue, WeightedGraph } from ".";
 
 describe("PriorityQueue", () => {
   test("enqueue and size", () => {
@@ -59,32 +59,72 @@ describe("PriorityQueue", () => {
   });
 });
 
-// Example usage:
-// const graph = new WeightedGraph();
-
-// graph.addVertex("A");
-// graph.addVertex("B");
-// graph.addVertex("C");
-// graph.addVertex("D");
-// graph.addVertex("E");
-// graph.addVertex("F");
-
-// graph.addEdge("A", "B", 4);
-// graph.addEdge("A", "C", 2);
-// graph.addEdge("B", "E", 3);
-// graph.addEdge("C", "D", 2);
-// graph.addEdge("C", "F", 4);
-// graph.addEdge("D", "E", 3);
-// graph.addEdge("D", "F", 1);
-// graph.addEdge("E", "F", 1);
-
-// const result = graph.dijkstra("A");
-// console.log("Distances:", result.distances);
-// console.log("Previous:", result.previous);
-
-// !TODO
+// from: https://www.cs.usfca.edu/~galles/visualization/Dijkstra.html
 describe("dikstras", () => {
-  test("dijkstra", () => {
-    expect(true).toBe(true);
+  test("simple", () => {
+    const graph = new WeightedGraph();
+
+    graph.addVertex("0");
+    graph.addVertex("1");
+    graph.addVertex("2");
+    graph.addVertex("3");
+    graph.addVertex("4");
+    graph.addVertex("5");
+    graph.addVertex("6");
+    graph.addVertex("7");
+
+    graph.addEdge("0", "2", 2);
+    graph.addEdge("0", "3", 9);
+    graph.addEdge("1", "2", 6);
+    graph.addEdge("1", "5", 3);
+    graph.addEdge("1", "6", 1);
+    graph.addEdge("2", "0", 2);
+    graph.addEdge("2", "1", 6);
+    graph.addEdge("2", "5", 5);
+    graph.addEdge("2", "6", 4);
+    graph.addEdge("3", "0", 9);
+    graph.addEdge("4", "6", 2);
+    graph.addEdge("4", "7", 6);
+    graph.addEdge("5", "1", 3);
+    graph.addEdge("5", "2", 5);
+    graph.addEdge("5", "6", 4);
+    graph.addEdge("5", "7", 7);
+    graph.addEdge("6", "1", 1);
+    graph.addEdge("6", "2", 4);
+    graph.addEdge("6", "4", 2);
+    graph.addEdge("6", "5", 4);
+    graph.addEdge("7", "4", 6);
+    graph.addEdge("7", "5", 7);
+
+    const result = graph.dijkstra("0");
+    expect(result.distances).toEqual(
+      new Map(
+        Object.entries({
+          ["0"]: 0,
+          ["1"]: 7,
+          ["2"]: 2,
+          ["3"]: 9,
+          ["4"]: 8,
+          ["5"]: 7,
+          ["6"]: 6,
+          ["7"]: 14,
+        })
+      )
+    );
+
+    expect(result.previous).toEqual(
+      new Map(
+        Object.entries({
+          ["0"]: null,
+          ["1"]: "6",
+          ["2"]: "0",
+          ["3"]: "0",
+          ["4"]: "6",
+          ["5"]: "2",
+          ["6"]: "2",
+          ["7"]: "5",
+        })
+      )
+    );
   });
 });
