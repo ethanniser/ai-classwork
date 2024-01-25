@@ -62,69 +62,93 @@ describe("PriorityQueue", () => {
 // from: https://www.cs.usfca.edu/~galles/visualization/Dijkstra.html
 describe("dikstras", () => {
   test("simple", () => {
-    const graph = new WeightedGraph();
-
-    graph.addVertex("0");
-    graph.addVertex("1");
-    graph.addVertex("2");
-    graph.addVertex("3");
-    graph.addVertex("4");
-    graph.addVertex("5");
-    graph.addVertex("6");
-    graph.addVertex("7");
-
-    graph.addEdge("0", "2", 2);
-    graph.addEdge("0", "3", 9);
-    graph.addEdge("1", "2", 6);
-    graph.addEdge("1", "5", 3);
-    graph.addEdge("1", "6", 1);
-    graph.addEdge("2", "0", 2);
-    graph.addEdge("2", "1", 6);
-    graph.addEdge("2", "5", 5);
-    graph.addEdge("2", "6", 4);
-    graph.addEdge("3", "0", 9);
-    graph.addEdge("4", "6", 2);
-    graph.addEdge("4", "7", 6);
-    graph.addEdge("5", "1", 3);
-    graph.addEdge("5", "2", 5);
-    graph.addEdge("5", "6", 4);
-    graph.addEdge("5", "7", 7);
-    graph.addEdge("6", "1", 1);
-    graph.addEdge("6", "2", 4);
-    graph.addEdge("6", "4", 2);
-    graph.addEdge("6", "5", 4);
-    graph.addEdge("7", "4", 6);
-    graph.addEdge("7", "5", 7);
+    const graph = WeightedGraph.fromAdjacencyList(
+      new Map([
+        [
+          "0",
+          [
+            { node: "2", weight: 2 },
+            { node: "3", weight: 9 },
+          ],
+        ],
+        [
+          "1",
+          [
+            { node: "2", weight: 6 },
+            { node: "5", weight: 3 },
+            { node: "6", weight: 1 },
+          ],
+        ],
+        [
+          "2",
+          [
+            { node: "0", weight: 2 },
+            { node: "1", weight: 6 },
+            { node: "5", weight: 5 },
+            { node: "6", weight: 4 },
+          ],
+        ],
+        ["3", [{ node: "0", weight: 9 }]],
+        [
+          "4",
+          [
+            { node: "6", weight: 2 },
+            { node: "7", weight: 6 },
+          ],
+        ],
+        [
+          "5",
+          [
+            { node: "1", weight: 3 },
+            { node: "2", weight: 5 },
+            { node: "6", weight: 4 },
+            { node: "7", weight: 7 },
+          ],
+        ],
+        [
+          "6",
+          [
+            { node: "1", weight: 1 },
+            { node: "2", weight: 4 },
+            { node: "4", weight: 2 },
+            { node: "5", weight: 4 },
+          ],
+        ],
+        [
+          "7",
+          [
+            { node: "4", weight: 6 },
+            { node: "5", weight: 7 },
+          ],
+        ],
+      ])
+    );
 
     const result = graph.dijkstra("0");
     expect(result.distances).toEqual(
-      new Map(
-        Object.entries({
-          ["0"]: 0,
-          ["1"]: 7,
-          ["2"]: 2,
-          ["3"]: 9,
-          ["4"]: 8,
-          ["5"]: 7,
-          ["6"]: 6,
-          ["7"]: 14,
-        })
-      )
+      new Map([
+        ["0", 0],
+        ["1", 7],
+        ["2", 2],
+        ["3", 9],
+        ["4", 8],
+        ["5", 7],
+        ["6", 6],
+        ["7", 14],
+      ])
     );
 
     expect(result.previous).toEqual(
-      new Map(
-        Object.entries({
-          ["0"]: null,
-          ["1"]: "6",
-          ["2"]: "0",
-          ["3"]: "0",
-          ["4"]: "6",
-          ["5"]: "2",
-          ["6"]: "2",
-          ["7"]: "5",
-        })
-      )
+      new Map([
+        ["0", null],
+        ["1", "6"],
+        ["2", "0"],
+        ["3", "0"],
+        ["4", "6"],
+        ["5", "2"],
+        ["6", "2"],
+        ["7", "5"],
+      ])
     );
   });
 });

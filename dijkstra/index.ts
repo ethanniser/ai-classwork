@@ -84,6 +84,14 @@ export class WeightedGraph {
     this.adjacencyList = new Map();
   }
 
+  static fromAdjacencyList(
+    list: Map<string, { node: string; weight: number }[]>
+  ) {
+    const graph = new WeightedGraph();
+    graph.adjacencyList = list;
+    return graph;
+  }
+
   addVertex(vertex: string) {
     if (!this.adjacencyList.has(vertex)) {
       this.adjacencyList.set(vertex, []);
