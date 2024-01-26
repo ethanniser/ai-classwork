@@ -151,4 +151,78 @@ describe("dikstras", () => {
       ])
     );
   });
+
+  test("python test 1", () => {
+    const graph = WeightedGraph.fromAdjacencyList(
+      new Map([
+        [
+          "1",
+          [
+            { node: "2", weight: 10 },
+            { node: "3", weight: 20 },
+            { node: "4", weight: 50 },
+          ],
+        ],
+        [
+          "2",
+          [
+            { node: "1", weight: 10 },
+            { node: "6", weight: 60 },
+          ],
+        ],
+        [
+          "3",
+          [
+            { node: "1", weight: 20 },
+            { node: "6", weight: 40 },
+          ],
+        ],
+        [
+          "4",
+          [
+            { node: "1", weight: 50 },
+            { node: "5", weight: 1 },
+          ],
+        ],
+        [
+          "5",
+          [
+            { node: "4", weight: 1 },
+            { node: "6", weight: 5 },
+          ],
+        ],
+        [
+          "6",
+          [
+            { node: "2", weight: 60 },
+            { node: "3", weight: 40 },
+            { node: "5", weight: 5 },
+          ],
+        ],
+      ])
+    );
+
+    const result = graph.dijkstra("1");
+    expect(result.distances).toEqual(
+      new Map([
+        ["1", 0],
+        ["2", 10],
+        ["3", 20],
+        ["4", 50],
+        ["5", 51],
+        ["6", 56],
+      ])
+    );
+
+    expect(result.previous).toEqual(
+      new Map([
+        ["1", null],
+        ["2", "1"],
+        ["3", "1"],
+        ["4", "1"],
+        ["5", "4"],
+        ["6", "5"],
+      ])
+    );
+  });
 });
