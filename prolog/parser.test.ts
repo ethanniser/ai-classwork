@@ -295,52 +295,6 @@ describe("built ins", () => {
     expect(toAst(input)).toEqual(expected);
   });
 
-  it("is", () => {
-    const input = "W is 5 + 3.";
-    const expected: Rule[] = [
-      {
-        _tag: "Rule",
-        head: {
-          _tag: "Functor",
-          name: "is",
-          arguments: [
-            {
-              _tag: "Variable",
-              name: "W",
-            },
-            {
-              _tag: "Functor",
-              name: "+",
-              arguments: [
-                {
-                  _tag: "Number",
-                  value: 5,
-                },
-                {
-                  _tag: "Number",
-                  value: 3,
-                },
-              ],
-            },
-          ],
-        },
-        body: {
-          _tag: "Functor",
-          name: ",",
-          arguments: [
-            {
-              _tag: "Functor",
-              name: "true",
-              arguments: [],
-            },
-          ],
-        },
-      },
-    ];
-
-    expect(toAst(input)).toEqual(expected);
-  });
-
   it("=", () => {
     const input = "foo = bar.";
     const expected: Rule[] = [

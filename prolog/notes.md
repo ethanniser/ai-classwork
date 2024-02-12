@@ -6,3 +6,9 @@ https://github.com/mthom/scryer-prolog
 
 - `a,b` is the same as `,(a,b)`
 - `a;b` is the same as `;(a,b)`
+
+## TODO
+
+- add numbers
+- add lists
+- add strings
