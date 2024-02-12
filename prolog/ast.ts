@@ -1,35 +1,33 @@
-interface Atom {
-  readonly _tag: "Atom";
-  readonly value: string;
-}
-
 interface Variable {
   readonly _tag: "Variable";
-  readonly value: string;
+  readonly name: string;
 }
 
 interface Functor {
   readonly _tag: "Functor";
-  readonly name: Atom;
+  readonly name: string;
   readonly arguments: Term[];
 }
 
-type Term = Atom | Variable | Functor;
-
-interface Fact {
-  readonly _tag: "Fact";
-  readonly head: Functor;
+interface Number {
+  readonly _tag: "Number";
+  readonly value: number;
 }
+
+// an atom is just a functor with no arguments
+
+type Term = Variable | Functor | Number;
 
 interface Rule {
   readonly _tag: "Rule";
   readonly head: Functor;
-  readonly body: Functor[];
+  readonly body: Functor;
 }
+
+// a fact is just a rule with one functor, the 'true' functor
 
 interface KnowledgeBase {
   readonly _tag: "KnowledgeBase";
-  readonly facts: Fact[];
   readonly rules: Rule[];
 }
 
@@ -38,4 +36,4 @@ interface Query {
   readonly goal: Functor;
 }
 
-export type { Atom, Variable, Functor, Term, Fact, Rule, KnowledgeBase, Query };
+export type { Variable, Functor, Number, Term, Rule, KnowledgeBase, Query };

@@ -5,11 +5,16 @@ interface BooleanResult {
   readonly success: boolean;
 }
 
-interface BindingsResult {
-  readonly _tag: "BindingsResult";
-  readonly success: boolean;
-  readonly bindings: Map<string, string>;
-}
+type BindingsResult =
+  | {
+      readonly _tag: "BindingsResult";
+      readonly success: true;
+      readonly bindings: Map<string, string>;
+    }
+  | {
+      readonly _tag: "BindingsResult";
+      readonly success: false;
+    };
 
 export type QueryResult = BooleanResult | BindingsResult;
 

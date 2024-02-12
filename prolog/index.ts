@@ -37,9 +37,10 @@ async function main() {
       case "BindingsResult":
         if (!result.success) {
           console.log("false.");
-        }
-        for (const [variable, value] of result.bindings) {
-          console.log(`${variable} = ${value}`);
+        } else {
+          for (const [variable, value] of result.bindings) {
+            console.log(`${variable} = ${value}`);
+          }
         }
     }
   }
