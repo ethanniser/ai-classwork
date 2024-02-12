@@ -27,4 +27,15 @@ interface Rule {
   readonly body: Functor[];
 }
 
-export type { Atom, Variable, Functor, Term, Fact, Rule };
+interface KnowledgeBase {
+  readonly _tag: "KnowledgeBase";
+  readonly facts: Fact[];
+  readonly rules: Rule[];
+}
+
+interface Query {
+  readonly _tag: "Query";
+  readonly goal: Functor;
+}
+
+export type { Atom, Variable, Functor, Term, Fact, Rule, KnowledgeBase, Query };

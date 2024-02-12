@@ -1,0 +1,35 @@
+import { tokenize } from "./lexer";
+import { parseToKnowledgeBase, parseToQuery } from "./parser";
+import { loadInterpreter } from "./interpreter";
+import { readFileSync } from "node:fs";
+import readline from "node:readline";
+
+const rl = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+const question = (prompt: string) =>
+  new Promise<string>((resolve) => {
+    rl.question(prompt, resolve);
+  });
+
+async function main() {
+  const inputFile = process.argv[2];
+  if (!inputFile) {
+    console.error("Usage: prolog <input>");
+    process.exit(1);
+  }
+
+  const input = readFileSync(inputFile, "utf8");
+  const knowledgeBaseTokens = tokenize(input);
+  const knowledgeBase = parseToKnowledgeBase(knowledgeBaseTokens);
+  const interpreter = loadInterpreter(knowledgeBase);
+
+  while (true) {
+    const query = await question("?- ");
+    const queryTokens = tokenize(query);
+    const parsedQuery = parseToQuery(queryTokens);
+    const result = interpreter.query(parsedQuery);
+    console.log(result);
+  }
+}
