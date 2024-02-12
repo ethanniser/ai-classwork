@@ -3,11 +3,6 @@ interface Atom {
   readonly value: string;
 }
 
-interface Number {
-  readonly _tag: "Number";
-  readonly value: number;
-}
-
 interface Variable {
   readonly _tag: "Variable";
   readonly value: string;
@@ -19,10 +14,7 @@ interface Functor {
   readonly arguments: Term[];
 }
 
-type Term = Atom | Number | Variable | Functor;
-
-const listSymbol = Symbol("ListFunctorIdentifier");
-const stringSymbol = Symbol("StringFunctorIdentifier");
+type Term = Atom | Variable | Functor;
 
 interface Fact {
   readonly _tag: "Fact";
@@ -35,6 +27,4 @@ interface Rule {
   readonly body: Functor[];
 }
 
-export type { Atom, Number, Variable, Functor, Term, Fact, Rule };
-
-export { listSymbol, stringSymbol };
+export type { Atom, Variable, Functor, Term, Fact, Rule };
