@@ -1,13 +1,26 @@
 import * as AST from "./ast";
 
+interface BooleanResult {
+  readonly _tag: "BooleanResult";
+  readonly success: boolean;
+}
+
+interface BindingsResult {
+  readonly _tag: "BindingsResult";
+  readonly success: boolean;
+  readonly bindings: Map<string, string>;
+}
+
+export type QueryResult = BooleanResult | BindingsResult;
+
 interface Interpreter {
-  readonly query: (query: AST.Query) => boolean;
+  readonly query: (query: AST.Query) => QueryResult;
 }
 
 class InterpreterImpl implements Interpreter {
   constructor(knowledgeBase: AST.KnowledgeBase) {}
 
-  public query(query: AST.Query): boolean {
+  public query(query: AST.Query): QueryResult {
     throw new Error("Not implemented");
   }
 }
