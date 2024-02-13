@@ -16,24 +16,51 @@ type BindingsResult =
       readonly success: false;
     };
 
-export type QueryResult = BooleanResult | BindingsResult;
+// TODO: Add Variables
+// export type QueryResult = BooleanResult | BindingsResult;
+export type QueryResult = BooleanResult;
 
 interface Interpreter {
   readonly query: (query: AST.Query) => QueryResult;
 }
 
+export function loadInterpreter(knowledgeBase: AST.KnowledgeBase): Interpreter {
+  return new InterpreterImpl(knowledgeBase);
+}
+
+const builtInFunctors: AST.Rule[] = [];
+
 class InterpreterImpl implements Interpreter {
-  private knowledgeBase: AST.KnowledgeBase;
+  private rules: AST.Rule[];
 
   constructor(knowledgeBase: AST.KnowledgeBase) {
-    this.knowledgeBase = knowledgeBase;
+    this.rules = knowledgeBase.rules.concat(builtInFunctors);
   }
 
   public query(query: AST.Query): QueryResult {
-    throw new Error("Not implemented");
+    return this.evaluateFunctor(query.goal);
   }
-}
 
-export function loadInterpreter(knowledgeBase: AST.KnowledgeBase): Interpreter {
-  return new InterpreterImpl(knowledgeBase);
+  private evaluateFunctor(functor: AST.Functor): QueryResult {
+    if (functor.name === "true" && functor.arguments.length === 0) {
+      return { _tag: "BooleanResult", success: true };
+    } else {
+      const rule = this.rules.find((rule) => {
+        return (
+          rule.head.name === functor.name &&
+          rule.head.arguments.length === functor.arguments.length
+        );
+      });
+      if (!rule) {
+        throw new Error(
+          `No rule found for ${functor.name}/${functor.arguments.length}`
+        );
+      }
+      return this.evaluateRule(rule);
+    }
+  }
+
+  private evaluateRule(rule: AST.Rule): QueryResult {
+    return this.evaluateFunctor(rule.body);
+  }
 }

@@ -9,6 +9,7 @@ https://github.com/mthom/scryer-prolog
 
 ## TODO
 
+- add variables
 - add numbers
 - add lists
 - add strings

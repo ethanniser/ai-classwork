@@ -3,6 +3,7 @@ import { parseToKnowledgeBase, parseToQuery } from "./parser";
 import { loadInterpreter } from "./interpreter";
 import { readFileSync } from "node:fs";
 import readline from "node:readline";
+import { PrologError } from "./error";
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -27,21 +28,30 @@ async function main() {
 
   while (true) {
     const query = await question("?- ");
-    const queryTokens = tokenize(query);
-    const parsedQuery = parseToQuery(queryTokens);
-    const result = interpreter.query(parsedQuery);
-    switch (result._tag) {
-      case "BooleanResult":
-        console.log(result.success ? "true." : "false.");
-        break;
-      case "BindingsResult":
-        if (!result.success) {
-          console.log("false.");
-        } else {
-          for (const [variable, value] of result.bindings) {
-            console.log(`${variable} = ${value}`);
-          }
-        }
+    try {
+      const queryTokens = tokenize(query);
+      const parsedQuery = parseToQuery(queryTokens);
+      const result = interpreter.query(parsedQuery);
+      switch (result._tag) {
+        case "BooleanResult":
+          console.log(result.success ? "true." : "false.");
+          break;
+        // TODO: Add Variables
+        // case "BindingsResult":
+        //   if (!result.success) {
+        //     console.log("false.");
+        //   } else {
+        //     for (const [variable, value] of result.bindings) {
+        //       console.log(`${variable} = ${value}`);
+        //     }
+        //   }
+      }
+    } catch (e) {
+      if (e instanceof PrologError) {
+        console.error(e.toString());
+      } else {
+        throw e;
+      }
     }
   }
 }
