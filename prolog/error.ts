@@ -17,3 +17,9 @@ export class InvalidSyntaxError extends PrologError {
     super(`Invalid syntax: \"${token}\" - ${explanation}`);
   }
 }
+
+export class InvalidQueryError extends PrologError {
+  constructor(public rule: AST.Rule, public explanation: string) {
+    super(`Invalid query - ${explanation}`);
+  }
+}

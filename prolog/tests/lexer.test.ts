@@ -39,4 +39,17 @@ describe("lexer", () => {
       { type: "period" },
     ]);
   });
+  it("can tokenize a > 1 arity functor", () => {
+    const input = "foo(bar, baz).";
+    const result = tokenize(input);
+    expect(result).toEqual([
+      { type: "identifier", value: "foo" },
+      { type: "openParen" },
+      { type: "identifier", value: "bar" },
+      { type: "comma" },
+      { type: "identifier", value: "baz" },
+      { type: "closeParen" },
+      { type: "period" },
+    ]);
+  });
 });

@@ -29,6 +29,7 @@ export function loadInterpreter(knowledgeBase: AST.KnowledgeBase): Interpreter {
   return new InterpreterImpl(knowledgeBase);
 }
 
+// rethink
 const builtInFunctors: AST.Rule[] = [];
 
 class InterpreterImpl implements Interpreter {
@@ -43,7 +44,9 @@ class InterpreterImpl implements Interpreter {
   }
 
   private evaluateFunctor(functor: AST.Functor): QueryResult {
-    if (functor.name === "true" && functor.arguments.length === 0) {
+    if (functor.name === "halt" && functor.arguments.length === 0) {
+      process.exit(0);
+    } else if (functor.name === "true" && functor.arguments.length === 0) {
       return true;
     } else {
       const rule = this.rules.find((rule) => {
