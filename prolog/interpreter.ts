@@ -1,4 +1,5 @@
 import * as AST from "./ast";
+import { UnknownFunctorError } from "./error";
 
 interface BooleanResult {
   readonly _tag: "BooleanResult";
@@ -18,7 +19,7 @@ type BindingsResult =
 
 // TODO: Add Variables
 // export type QueryResult = BooleanResult | BindingsResult;
-export type QueryResult = BooleanResult;
+export type QueryResult = boolean;
 
 interface Interpreter {
   readonly query: (query: AST.Query) => QueryResult;
@@ -43,7 +44,7 @@ class InterpreterImpl implements Interpreter {
 
   private evaluateFunctor(functor: AST.Functor): QueryResult {
     if (functor.name === "true" && functor.arguments.length === 0) {
-      return { _tag: "BooleanResult", success: true };
+      return true;
     } else {
       const rule = this.rules.find((rule) => {
         return (
@@ -52,15 +53,30 @@ class InterpreterImpl implements Interpreter {
         );
       });
       if (!rule) {
-        throw new Error(
-          `No rule found for ${functor.name}/${functor.arguments.length}`
-        );
+        throw new UnknownFunctorError(functor);
       }
-      return this.evaluateRule(rule);
+      return this.evaluateRule(rule, functor);
     }
   }
 
-  private evaluateRule(rule: AST.Rule): QueryResult {
-    return this.evaluateFunctor(rule.body);
+  private evaluateRule(rule: AST.Rule, value: AST.Functor): QueryResult {
+    if (this.compareFunctors(rule.head, value)) {
+      return this.evaluateFunctor(rule.body);
+    } else {
+      return false;
+    }
+  }
+
+  private compareFunctors(
+    functor1: AST.Functor,
+    functor2: AST.Functor
+  ): boolean {
+    return (
+      functor1.name === functor2.name &&
+      functor1.arguments.length === functor2.arguments.length &&
+      functor1.arguments.every((arg, i) => {
+        return this.compareFunctors(arg, functor2.arguments[i]!);
+      })
+    );
   }
 }

@@ -32,23 +32,24 @@ async function main() {
       const queryTokens = tokenize(query);
       const parsedQuery = parseToQuery(queryTokens);
       const result = interpreter.query(parsedQuery);
-      switch (result._tag) {
-        case "BooleanResult":
-          console.log(result.success ? "true." : "false.");
-          break;
-        // TODO: Add Variables
-        // case "BindingsResult":
-        //   if (!result.success) {
-        //     console.log("false.");
-        //   } else {
-        //     for (const [variable, value] of result.bindings) {
-        //       console.log(`${variable} = ${value}`);
-        //     }
-        //   }
-      }
+      console.log(result ? "true." : "false.");
+      // TODO: Add Variables
+      // switch (result._tag) {
+      //   case "BooleanResult":
+      //     console.log(result.success ? "true." : "false.");
+      //     break;
+      // case "BindingsResult":
+      //   if (!result.success) {
+      //     console.log("false.");
+      //   } else {
+      //     for (const [variable, value] of result.bindings) {
+      //       console.log(`${variable} = ${value}`);
+      //     }
+      //   }
+      // }
     } catch (e) {
       if (e instanceof PrologError) {
-        console.error(e.toString());
+        console.error(e.message);
       } else {
         throw e;
       }

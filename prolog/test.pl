@@ -7,4 +7,5 @@ parent(victoria,edward).
 father(X,Y) :- %a rule: X is father of Y if X if a male parent of Y
 parent(X,Y), male(X). %body of above rule, can be on same line.
 mother(X,Y) :- parent(X,Y), female(X). %a similar rule for X being mother of Y
-foo.
+foo(bar).
+baz(bar) :- foo(bar).
