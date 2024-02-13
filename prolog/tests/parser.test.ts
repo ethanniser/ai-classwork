@@ -1,8 +1,7 @@
 import { describe, it, expect } from "bun:test";
-import { tokenize } from "./lexer";
-import { parseToKnowledgeBase } from "./parser";
-import type { Rule } from "./ast";
-import { test } from "effect/Logger";
+import { tokenize } from "../lexer";
+import { parseToKnowledgeBase } from "../parser";
+import type { Rule } from "../ast";
 
 function toAst(input: string): Rule[] {
   const tokens = tokenize(input);

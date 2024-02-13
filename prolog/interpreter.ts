@@ -23,7 +23,11 @@ interface Interpreter {
 }
 
 class InterpreterImpl implements Interpreter {
-  constructor(knowledgeBase: AST.KnowledgeBase) {}
+  private knowledgeBase: AST.KnowledgeBase;
+
+  constructor(knowledgeBase: AST.KnowledgeBase) {
+    this.knowledgeBase = knowledgeBase;
+  }
 
   public query(query: AST.Query): QueryResult {
     throw new Error("Not implemented");
