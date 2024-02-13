@@ -4,8 +4,11 @@ https://github.com/mthom/scryer-prolog
 
 ## all operators are functors!!!
 
-- `a,b` is the same as `,(a,b)`
-- `a;b` is the same as `;(a,b)`
+### Supported operators
+
+none
+
+### Todo Operators
 
 ## TODO
 

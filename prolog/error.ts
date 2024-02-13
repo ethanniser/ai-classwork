@@ -11,3 +11,9 @@ export class UnknownFunctorError extends PrologError {
     super(`Unknown functor: ${functor.name}/${functor.arguments.length}`);
   }
 }
+
+export class InvalidSyntaxError extends PrologError {
+  constructor(public token: string, public explanation: string) {
+    super(`Invalid syntax: \"${token}\" - ${explanation}`);
+  }
+}
