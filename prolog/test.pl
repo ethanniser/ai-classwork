@@ -1,2 +1,2 @@
-male(bob).
-human(bob) :- male(bob).
+foo(bar).
+foo(baz).

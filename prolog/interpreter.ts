@@ -14,7 +14,8 @@ type BindingsResult =
   | {
       readonly _tag: "BindingsResult";
       readonly success: true;
-      readonly bindings: Map<string, string>;
+      readonly bindings: Record<string, AST.Functor[]>;
+      // bindings is a map of variable names to their possible values
     }
   | {
       readonly _tag: "BindingsResult";
@@ -26,7 +27,7 @@ function BindingsResult({
   bindings,
 }: {
   success: true;
-  bindings: Map<string, string>;
+  bindings: Record<string, AST.Functor[]>;
 }): BindingsResult;
 function BindingsResult({ success }: { success: false }): BindingsResult;
 function BindingsResult({
@@ -34,7 +35,7 @@ function BindingsResult({
   bindings,
 }: {
   success: boolean;
-  bindings?: Map<string, string>;
+  bindings?: Record<string, AST.Functor[]>;
 }): BindingsResult {
   if (success) {
     return { _tag: "BindingsResult", success: true, bindings: bindings! };
