@@ -1,8 +1,7 @@
-// TODO: Add Variables
-// interface Variable {
-//   readonly _tag: "Variable";
-//   readonly name: string;
-// }
+interface Variable {
+  readonly _tag: "Variable";
+  readonly name: string;
+}
 
 interface Functor {
   readonly _tag: "Functor";
@@ -12,9 +11,7 @@ interface Functor {
 
 // an atom is just a functor with no arguments
 
-// TODO: Add Variables
-// type Term = Variable | Functor;
-type Term = Functor;
+type Term = Variable | Functor;
 
 interface Rule {
   readonly _tag: "Rule";
@@ -35,6 +32,4 @@ interface Query {
   readonly goal: Functor;
 }
 
-// TODO: Add Variables
-// export type { Variable, Functor, Term, Rule, KnowledgeBase, Query };
-export type { Functor, Term, Rule, KnowledgeBase, Query };
+export type { Variable, Functor, Term, Rule, KnowledgeBase, Query };

@@ -22,6 +22,8 @@ export function parseToKnowledgeBase(tokens: Token[]): AST.KnowledgeBase {
 
     if (tokens[i]?.type === "period") {
       i++; // Skip period
+    } else {
+      throw new PrologError("Expected a period");
     }
   }
   return { _tag: "KnowledgeBase", rules };
