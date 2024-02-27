@@ -33,7 +33,7 @@ describe("interepreter", () => {
 
     const interpreter = loadInterpreter(knowledgeBase);
     const result = interpreter.query(query);
-    expect(result).toEqual({ _tag: "BooleanResult", success: true });
+    expect(result).toEqual({ _tag: "QueryResult", success: true });
   });
   it("can evaluate arity 1 exists", () => {
     const knowledgeBase: KnowledgeBase = {
@@ -65,7 +65,7 @@ describe("interepreter", () => {
 
     const interpreter = loadInterpreter(knowledgeBase);
     const result = interpreter.query(query);
-    expect(result).toEqual({ _tag: "BooleanResult", success: true });
+    expect(result).toEqual({ _tag: "QueryResult", success: true });
   });
 
   it("can evaluate nested rules", () => {
@@ -110,7 +110,7 @@ describe("interepreter", () => {
         arguments: [{ _tag: "Functor", name: "bar", arguments: [] }],
       },
     });
-    expect(result).toEqual({ _tag: "BooleanResult", success: true });
+    expect(result).toEqual({ _tag: "QueryResult", success: true });
   });
 
   it("returns false when the query is not provable", () => {
@@ -148,7 +148,7 @@ describe("interepreter", () => {
         ],
       },
     });
-    expect(result).toEqual({ _tag: "BooleanResult", success: false });
+    expect(result).toEqual({ _tag: "QueryResult", success: false });
   });
 
   it("throws when no rule exists", () => {
@@ -213,7 +213,7 @@ describe("interepreter", () => {
       },
     });
     expect(result).toEqual({
-      _tag: "BindingsResult",
+      _tag: "QueryResult",
       success: true,
       bindings: {
         X: [
