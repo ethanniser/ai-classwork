@@ -36,7 +36,7 @@ async function main() {
         if (result.bindings) {
           for (const variable in result.bindings) {
             console.log(
-              `${variable} = ${result.bindings[variable]!.join(", ")}`
+              `${variable} = ${result.bindings.get(variable)!.join(", ")}`
             );
           }
         } else {

@@ -1,9 +1,9 @@
 import * as AST from "./ast";
-import { UnknownFunctorError } from "./error";
+import { PrologError } from "./error";
 
 type NonEmptyArray<T> = [T, ...T[]];
 
-type Bindings = Record<string, NonEmptyArray<AST.Term>>;
+type Bindings = Map<string, NonEmptyArray<AST.Term>>;
 
 export type QueryResult =
   | {
@@ -33,45 +33,27 @@ export function loadInterpreter(knowledgeBase: AST.KnowledgeBase): Interpreter {
 }
 
 class InterpreterImpl implements Interpreter {
-  private rules: AST.Rule[];
+  private initialBindings: Bindings;
 
   constructor(knowledgeBase: AST.KnowledgeBase) {
-    this.rules = knowledgeBase.rules;
+    const bindings = new Map<string, NonEmptyArray<AST.Term>>();
+    for (const rule of knowledgeBase.rules) {
+      const values = bindings.get(rule.head.name);
+      if (values) {
+        values.push(rule.body);
+      } else {
+        bindings.set(rule.head.name, [rule.body]);
+      }
+    }
+    this.initialBindings = bindings;
+    console.log(this.initialBindings.get("f")![0]);
   }
 
   public query(query: AST.Query): QueryResult {
     throw new Error("Not implemented");
   }
 
-  private evaluateRule(
-    rule: AST.Rule,
-    query: AST.Query,
-    bindings: Bindings
-  ): QueryResult {
-    throw new Error("Not implemented");
-  }
-
-  private backtrack(
-    query: AST.Query,
-    path: AST.Rule[],
-    bindings: Bindings
-  ): QueryResult {
-    throw new Error("Not implemented");
-  }
-
-  private unify(
-    term1: AST.Term,
-    term2: AST.Term,
-    currentBindings: Bindings
-  ): Bindings | null {
-    throw new Error("Not implemented");
-  }
-
-  private applyBindings(term: AST.Term, bindings: Bindings): AST.Term {
-    throw new Error("Not implemented");
-  }
-
   private cloneBindings(bindings: Bindings): Bindings {
-    return structuredClone(bindings);
+    return new Map(bindings);
   }
 }

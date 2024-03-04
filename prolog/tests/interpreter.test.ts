@@ -215,20 +215,15 @@ describe("interepreter", () => {
     expect(result).toEqual({
       _tag: "QueryResult",
       success: true,
-      bindings: {
-        X: [
-          {
-            _tag: "Functor",
-            name: "bar",
-            arguments: [],
-          },
-          {
-            _tag: "Functor",
-            name: "baz",
-            arguments: [],
-          },
+      bindings: new Map([
+        [
+          "X",
+          [
+            { _tag: "Functor", name: "bar", arguments: [] },
+            { _tag: "Functor", name: "baz", arguments: [] },
+          ],
         ],
-      },
+      ]),
     });
   });
 });
