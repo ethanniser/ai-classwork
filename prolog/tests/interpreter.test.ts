@@ -1,6 +1,7 @@
 import { describe, it, expect } from "bun:test";
 import type { KnowledgeBase, Query } from "../ast";
 import { loadInterpreter } from "../interpreter";
+import { UnknownFunctorError } from "../error";
 
 describe("interepreter", () => {
   it("can evaluate arity 0 exists", () => {
@@ -168,6 +169,44 @@ describe("interepreter", () => {
         },
       });
     expect(result).toThrow();
+  });
+
+  it("returns false when the query is not provable", () => {
+    const knowledgeBase: KnowledgeBase = {
+      _tag: "KnowledgeBase",
+      rules: [
+        {
+          _tag: "Rule",
+          head: {
+            _tag: "Functor",
+            name: "foo",
+            arguments: [{ _tag: "Functor", name: "bar", arguments: [] }],
+          },
+          body: {
+            _tag: "Functor",
+            name: "true",
+            arguments: [],
+          },
+        },
+      ],
+    };
+
+    const interpreter = loadInterpreter(knowledgeBase);
+    const result = interpreter.query({
+      _tag: "Query",
+      goal: {
+        _tag: "Functor",
+        name: "foo",
+        arguments: [
+          {
+            _tag: "Functor",
+            name: "baz",
+            arguments: [],
+          },
+        ],
+      },
+    });
+    expect(result).toEqual({ _tag: "QueryResult", success: false });
   });
 
   it("can calculate a variable query", () => {
