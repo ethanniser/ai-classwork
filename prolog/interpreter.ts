@@ -7,7 +7,7 @@ export type QueryResult =
   | {
       readonly _tag: "QueryResult";
       readonly success: true;
-      readonly bindings?: Bindings[];
+      readonly bindings: Bindings[];
     }
   | {
       readonly _tag: "QueryResult";
@@ -16,9 +16,9 @@ export type QueryResult =
 
 function QueryResult(success: true, bindings?: Bindings[]): QueryResult;
 function QueryResult(success: false): QueryResult;
-function QueryResult(success: boolean, bindings?: Bindings[]): QueryResult {
+function QueryResult(success: boolean, bindings: Bindings[] = []): QueryResult {
   return success
-    ? { _tag: "QueryResult", success, ...(bindings ? { bindings } : {}) }
+    ? { _tag: "QueryResult", success, bindings: bindings }
     : { _tag: "QueryResult", success };
 }
 
@@ -42,34 +42,56 @@ class InterpreterImpl implements Interpreter {
   }
 
   private evaluateFunctor(
-    functor: AST.Functor,
-    bindings: Bindings,
-  ): QueryResult {
-    console.log("evaluate functor", functor.name, bindings);
-    const builtIn = this.handleBuiltIn(functor);
-    if (builtIn) {
-      return builtIn;
-    }
+  functor: AST.Functor,
+  bindings: Bindings,
+): QueryResult {
+  console.log("evaluate functor", functor.name, bindings);
+  const builtIn = this.handleBuiltIn(functor);
+  if (builtIn) {
+    return builtIn.success ? QueryResult(true, bindings.size === 0 ? []: [bindings]) : QueryResult(false);
+  }
 
-    const rules = this.rules.filter((rule) => rule.head.name === functor.name);
+  const rules = this.rules.filter((rule) => rule.head.name === functor.name);
 
-    if (rules.length === 0) {
-      throw new UnknownFunctorError(functor);
-    }
+  if (rules.length === 0) {
+    throw new UnknownFunctorError(functor);
+  }
 
-    for (const rule of rules) {
-      const newBindings = this.unify(
-        rule.head.arguments,
-        functor.arguments,
-        bindings,
-      );
-      if (newBindings) {
-        const result = this.evaluateFunctor(rule.body, newBindings);
-        return result;
-      }
+  const results: QueryResult[] = []; // Accumulate results of all applicable rules
+
+  for (const rule of rules) {
+    const newBindings = this.unify(
+      rule.head.arguments,
+      functor.arguments,
+      bindings,
+    );
+    if (newBindings) {
+      const result = this.evaluateFunctor(rule.body, newBindings);
+      results.push(result); // Store the result
     }
+  }
+
+  // If no successful matches were found, return failure
+  if (results.length === 0) {
     return QueryResult(false);
   }
+
+  // If any rule resulted in a successful match, return success with bindings
+  // If none of the rules succeeded, return failure
+    const anySuccess = results.some(result => result.success);
+    if (!anySuccess) {
+      return QueryResult(false);
+    }
+
+    function isSucessful(result: QueryResult): result is { _tag: 'QueryResult', success: true; bindings: Bindings[] } {
+      return result.success;
+    }
+
+    // If any rule resulted in a successful match, return success with bindings
+    return QueryResult(true, results.filter(isSucessful).flatMap(result => result.bindings));
+
+}
+
 
   private handleBuiltIn(functor: AST.Functor): QueryResult | null {
     switch (functor.name) {

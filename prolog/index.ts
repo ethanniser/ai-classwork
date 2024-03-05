@@ -33,12 +33,11 @@ async function main() {
       const parsedQuery = parseToQuery(queryTokens);
       const result = interpreter.query(parsedQuery);
       if (result.success) {
-        if (result.bindings) {
-          for (const binding in result.bindings) {
-            // TODO: print binding somehow
-          }
-        } else {
-          console.log("true.");
+        console.log("true.");
+        for (const binding of result.bindings) {
+          binding.forEach((value, variable) => {
+            console.log(`${variable} = ${value}`);
+          });
         }
       } else {
         console.log("false.");
