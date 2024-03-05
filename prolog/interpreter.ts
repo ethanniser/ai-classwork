@@ -110,6 +110,16 @@ class InterpreterImpl implements Interpreter {
     term2: AST.Term[],
     existingBindings: Bindings,
   ): Bindings | null {
+    const result = this._unify(term1, term2, existingBindings);
+    console.log("unify", term1, term2, existingBindings, result);
+    return result;
+  }
+
+  private _unify(
+    term1: AST.Term[],
+    term2: AST.Term[],
+    existingBindings: Bindings,
+  ): Bindings | null {
     if (term1.length !== term2.length) return null;
 
     let bindings = this.cloneBindings(existingBindings);

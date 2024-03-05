@@ -181,6 +181,68 @@ describe("parsing functors with 'body'", () => {
   });
 });
 
+describe("parsing variables", () => {
+  it("parses a variable", () => {
+    const input = "foo(X).";
+    const expected: Rule[] = [
+      {
+        _tag: "Rule",
+        head: {
+          _tag: "Functor",
+          name: "foo",
+          arguments: [
+            {
+              _tag: "Variable",
+              name: "X",
+            },
+          ],
+        },
+        body: {
+          _tag: "Functor",
+          name: "true",
+          arguments: [],
+        },
+      },
+    ];
+
+    expect(toAst(input)).toEqual(expected);
+  });
+
+  it("nested variables", () => {
+    const input = "foo(X, Y, Z).";
+    const expected: Rule[] = [
+      {
+        _tag: "Rule",
+        head: {
+          _tag: "Functor",
+          name: "foo",
+          arguments: [
+            {
+              _tag: "Variable",
+              name: "X",
+            },
+            {
+              _tag: "Variable",
+              name: "Y",
+            },
+            {
+              _tag: "Variable",
+              name: "Z",
+            },
+          ],
+        },
+        body: {
+          _tag: "Functor",
+          name: "true",
+          arguments: [],
+        },
+      },
+    ];
+
+    expect(toAst(input)).toEqual(expected);
+  });
+});
+
 describe("parsing queries", () => {
   it("parses a query", () => {
     const input = "foo(bar).";

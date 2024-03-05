@@ -30,7 +30,9 @@ async function main() {
     const query = await question("?- ");
     try {
       const queryTokens = tokenize(query);
+      console.log("Query Tokens:", queryTokens)
       const parsedQuery = parseToQuery(queryTokens);
+      console.log("Query:", parsedQuery)
       const result = interpreter.query(parsedQuery);
       if (result.success) {
         console.log("true.");
