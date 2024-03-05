@@ -34,10 +34,8 @@ async function main() {
       const result = interpreter.query(parsedQuery);
       if (result.success) {
         if (result.bindings) {
-          for (const variable in result.bindings) {
-            console.log(
-              `${variable} = ${result.bindings.get(variable)!.join(", ")}`
-            );
+          for (const binding in result.bindings) {
+            // TODO: print binding somehow
           }
         } else {
           console.log("true.");

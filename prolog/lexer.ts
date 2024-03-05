@@ -49,7 +49,7 @@ export function tokenize(input: string): Token[] {
         } else {
           throw new InvalidSyntaxError(
             nextChar ?? "EOF",
-            "Expected a rule separator"
+            "Expected a rule separator",
           );
         }
         break;

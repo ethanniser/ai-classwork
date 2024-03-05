@@ -13,13 +13,19 @@ export class UnknownFunctorError extends PrologError {
 }
 
 export class InvalidSyntaxError extends PrologError {
-  constructor(public token: string, public explanation: string) {
+  constructor(
+    public token: string,
+    public explanation: string,
+  ) {
     super(`Invalid syntax: \"${token}\" - ${explanation}`);
   }
 }
 
 export class InvalidQueryError extends PrologError {
-  constructor(public rule: AST.Rule, public explanation: string) {
+  constructor(
+    public rule: AST.Rule,
+    public explanation: string,
+  ) {
     super(`Invalid query - ${explanation}`);
   }
 }

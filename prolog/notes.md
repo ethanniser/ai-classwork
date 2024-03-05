@@ -10,7 +10,7 @@ none
 
 ### Todo Operators
 
- - 2 stage parse tokens -> ir -> functors that handles bianry ops and stuff?
+- 2 stage parse tokens -> ir -> functors that handles bianry ops and stuff?
 
 ## TODO
 

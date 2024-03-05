@@ -42,7 +42,8 @@ export function parseToKnowledgeBase(tokens: Token[]): AST.KnowledgeBase {
         args.push(parseFunctor());
         if (tokens[i]?.type === "comma") i++; // Skip comma
       }
-      if (tokens[i]?.type === "closeParen") i++; // Skip close parenthesis
+      if (tokens[i]?.type === "closeParen")
+        i++; // Skip close parenthesis
       else throw new PrologError("Expected a closing parenthesis");
     }
     return { _tag: "Functor", name, arguments: args };
@@ -84,7 +85,8 @@ export function parseToQuery(tokens: Token[]): AST.Query {
         args.push(parseFunctor());
         if (tokens[i]?.type === "comma") i++; // Skip comma
       }
-      if (tokens[i]?.type === "closeParen") i++; // Skip close parenthesis
+      if (tokens[i]?.type === "closeParen")
+        i++; // Skip close parenthesis
       else throw new PrologError("Expected a closing parenthesis");
     }
     return { _tag: "Functor", name, arguments: args };

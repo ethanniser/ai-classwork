@@ -209,7 +209,44 @@ describe("interepreter", () => {
     expect(result).toEqual({ _tag: "QueryResult", success: false });
   });
 
-  it("can calculate a variable query", () => {
+  it("can calculate a variable query with one result", () => {
+    const knowledgeBase: KnowledgeBase = {
+      _tag: "KnowledgeBase",
+      rules: [
+        {
+          _tag: "Rule",
+          head: {
+            _tag: "Functor",
+            name: "foo",
+            arguments: [{ _tag: "Functor", name: "bar", arguments: [] }],
+          },
+          body: {
+            _tag: "Functor",
+            name: "true",
+            arguments: [],
+          },
+        },
+      ],
+    };
+
+    const interpreter = loadInterpreter(knowledgeBase);
+    const result = interpreter.query({
+      _tag: "Query",
+      goal: {
+        _tag: "Functor",
+        name: "foo",
+        arguments: [{ _tag: "Variable", name: "X" }],
+      },
+    });
+    expect(result).toEqual({
+      _tag: "QueryResult",
+      success: true,
+      bindings: new Map([
+        ["X", [{ _tag: "Functor", name: "bar", arguments: [] }]],
+      ]),
+    });
+  });
+  it("can calculate a variable query with multiple results", () => {
     const knowledgeBase: KnowledgeBase = {
       _tag: "KnowledgeBase",
       rules: [
