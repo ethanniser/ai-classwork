@@ -83,50 +83,52 @@ class InterpreterImpl implements Interpreter {
     return null;
   }
 
-  // always returns a new bindings object
   private unify(
     term1: AST.Term[],
     term2: AST.Term[],
     existingBindings: Bindings,
   ): Bindings | null {
-    // if the terms do not have the same length, it is not possible to unify them
     if (term1.length !== term2.length) return null;
 
-    const bindings = this.cloneBindings(existingBindings);
+    let bindings = this.cloneBindings(existingBindings);
 
-    // iterate over pairs of terms, to recursively unify them
     for (let i = 0; i < term1.length; i++) {
       const t1 = term1[i]!;
       const t2 = term2[i]!;
 
-      // Case 1: Both terms are variables
       if (t1._tag === "Variable" && t2._tag === "Variable") {
-        // if both variables have the same name throw bc we cant handle that right now
-        // TODO: handle variables with the same name being used multiple times
-        if (t1.name === t2.name)
+        if (t1.name === t2.name) {
           throw new Error("unable to handle reused variable name");
+        } else {
+          bindings.set(t1.name, t2);
+        }
+      } else if (t1._tag === "Variable" || t2._tag === "Variable") {
+        const variable = t1._tag === "Variable" ? t1 : t2;
+        const value = t1._tag === "Variable" ? t2 : t1;
+        bindings.set(variable.name, value);
+      } else if (t1._tag === "Functor" && t2._tag === "Functor") {
+        if (t1.name !== t2.name || t1.arguments.length !== t2.arguments.length) {
+          return null;
+        }
+        // Recursively unify arguments
+        const subBindings = this.unify(t1.arguments, t2.arguments, bindings);
+        if (subBindings === null) {
+          return null;
+        }
+        // Merge the sub-bindings with the current bindings
+        bindings = this.mergeBindings(bindings, subBindings);
+      } else {
+        throw new Error("should be unreachable");
       }
     }
     return bindings;
   }
 
-  private termsEqual(term1: AST.Term, term2: AST.Term): boolean {
-    if (term1._tag === "Variable" && term2._tag === "Variable") {
-      return term1.name === term2.name;
-    } else if (term1._tag === "Functor" && term2._tag === "Functor") {
-      return (
-        term1.name === term2.name &&
-        term1.arguments.length === term2.arguments.length &&
-        term1.arguments.every((arg, i) =>
-          this.termsEqual(arg, term2.arguments[i]!),
-        )
-      );
-    } else {
-      return term1 === term2;
-    }
-  }
-
   private cloneBindings(bindings: Bindings): Bindings {
     return new Map(bindings);
+  }
+
+  private mergeBindings(bindings1: Bindings, bindings2: Bindings): Bindings {
+    return new Map([...bindings1, ...bindings2]);
   }
 }
