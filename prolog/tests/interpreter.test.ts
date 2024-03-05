@@ -241,9 +241,9 @@ describe("interepreter", () => {
     expect(result).toEqual({
       _tag: "QueryResult",
       success: true,
-      bindings: new Map([
-        ["X", [{ _tag: "Functor", name: "bar", arguments: [] }]],
-      ]),
+      bindings: [
+        new Map([["X", { _tag: "Functor", name: "bar", arguments: [] }]]),
+      ],
     });
   });
   it("can calculate a variable query with multiple results", () => {
@@ -291,15 +291,10 @@ describe("interepreter", () => {
     expect(result).toEqual({
       _tag: "QueryResult",
       success: true,
-      bindings: new Map([
-        [
-          "X",
-          [
-            { _tag: "Functor", name: "bar", arguments: [] },
-            { _tag: "Functor", name: "baz", arguments: [] },
-          ],
-        ],
-      ]),
+      bindings: [
+        new Map([["X", { _tag: "Functor", name: "bar", arguments: [] }]]),
+        new Map([["X", { _tag: "Functor", name: "baz", arguments: [] }]]),
+      ],
     });
   });
 });
