@@ -39,6 +39,7 @@ async function main() {
           binding.forEach((value, variable) => {
             console.log(`${variable} = ${value.name}`);
           });
+          console.log(";");
         }
       } else {
         console.log("false.");
