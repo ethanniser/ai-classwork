@@ -42,56 +42,60 @@ class InterpreterImpl implements Interpreter {
   }
 
   private evaluateFunctor(
-  functor: AST.Functor,
-  bindings: Bindings,
-): QueryResult {
-  console.log("evaluate functor", functor.name, bindings);
-  const builtIn = this.handleBuiltIn(functor);
-  if (builtIn) {
-    return builtIn.success ? QueryResult(true, bindings.size === 0 ? []: [bindings]) : QueryResult(false);
-  }
-
-  const rules = this.rules.filter((rule) => rule.head.name === functor.name);
-
-  if (rules.length === 0) {
-    throw new UnknownFunctorError(functor);
-  }
-
-  const results: QueryResult[] = []; // Accumulate results of all applicable rules
-
-  for (const rule of rules) {
-    const newBindings = this.unify(
-      rule.head.arguments,
-      functor.arguments,
-      bindings,
-    );
-    if (newBindings) {
-      const result = this.evaluateFunctor(rule.body, newBindings);
-      results.push(result); // Store the result
+    functor: AST.Functor,
+    bindings: Bindings,
+  ): QueryResult {
+    const builtIn = this.handleBuiltIn(functor);
+    if (builtIn) {
+      return builtIn.success
+        ? QueryResult(true, bindings.size === 0 ? [] : [bindings])
+        : QueryResult(false);
     }
-  }
 
-  // If no successful matches were found, return failure
-  if (results.length === 0) {
-    return QueryResult(false);
-  }
+    const rules = this.rules.filter((rule) => rule.head.name === functor.name);
 
-  // If any rule resulted in a successful match, return success with bindings
-  // If none of the rules succeeded, return failure
-    const anySuccess = results.some(result => result.success);
+    if (rules.length === 0) {
+      throw new UnknownFunctorError(functor);
+    }
+
+    const results: QueryResult[] = []; // Accumulate results of all applicable rules
+
+    for (const rule of rules) {
+      const newBindings = this.unify(
+        rule.head.arguments,
+        functor.arguments,
+        bindings,
+      );
+      if (newBindings) {
+        const result = this.evaluateFunctor(rule.body, newBindings);
+        results.push(result); // Store the result
+      }
+    }
+
+    // If no successful matches were found, return failure
+    if (results.length === 0) {
+      return QueryResult(false);
+    }
+
+    // If any rule resulted in a successful match, return success with bindings
+    // If none of the rules succeeded, return failure
+    const anySuccess = results.some((result) => result.success);
     if (!anySuccess) {
       return QueryResult(false);
     }
 
-    function isSucessful(result: QueryResult): result is { _tag: 'QueryResult', success: true; bindings: Bindings[] } {
+    function isSucessful(
+      result: QueryResult,
+    ): result is { _tag: "QueryResult"; success: true; bindings: Bindings[] } {
       return result.success;
     }
 
     // If any rule resulted in a successful match, return success with bindings
-    return QueryResult(true, results.filter(isSucessful).flatMap(result => result.bindings));
-
-}
-
+    return QueryResult(
+      true,
+      results.filter(isSucessful).flatMap((result) => result.bindings),
+    );
+  }
 
   private handleBuiltIn(functor: AST.Functor): QueryResult | null {
     switch (functor.name) {
@@ -106,16 +110,6 @@ class InterpreterImpl implements Interpreter {
   }
 
   private unify(
-    term1: AST.Term[],
-    term2: AST.Term[],
-    existingBindings: Bindings,
-  ): Bindings | null {
-    const result = this._unify(term1, term2, existingBindings);
-    console.log("unify", term1, term2, existingBindings, result);
-    return result;
-  }
-
-  private _unify(
     term1: AST.Term[],
     term2: AST.Term[],
     existingBindings: Bindings,
@@ -139,7 +133,10 @@ class InterpreterImpl implements Interpreter {
         const value = t1._tag === "Variable" ? t2 : t1;
         bindings.set(variable.name, value);
       } else if (t1._tag === "Functor" && t2._tag === "Functor") {
-        if (t1.name !== t2.name || t1.arguments.length !== t2.arguments.length) {
+        if (
+          t1.name !== t2.name ||
+          t1.arguments.length !== t2.arguments.length
+        ) {
           return null;
         }
         // Recursively unify arguments

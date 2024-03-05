@@ -2,12 +2,16 @@ import type { Token } from "./lexer";
 import * as AST from "./ast";
 import { PrologError } from "./error";
 
+function isCapitalzied(str: string): boolean {
+  return /^[A-Z]/.test(str);
+}
+
 export function parseToKnowledgeBase(tokens: Token[]): AST.KnowledgeBase {
   const rules: AST.Rule[] = [];
   let i = 0;
 
   while (i < tokens.length) {
-    const head = parseFunctor();
+    const head = parseTerm();
     let body: AST.Functor;
 
     // Check for rule separator and parse the body accordingly
@@ -28,18 +32,22 @@ export function parseToKnowledgeBase(tokens: Token[]): AST.KnowledgeBase {
   }
   return { _tag: "KnowledgeBase", rules };
 
-  function parseFunctor(): AST.Functor {
+  function parseTerm(): AST.Term {
     const nextToken = tokens[i];
     if (nextToken?.type !== "identifier")
       throw new PrologError("Expected an identifier");
     const name = nextToken.value;
-    const args: AST.Functor[] = [];
+    const args: AST.Term[] = [];
     i++; // Move past the functor name
+
+    if (isCapitalzied(name)) {
+      return { _tag: "Variable", name };
+    }
 
     if (tokens[i]?.type === "openParen") {
       i++; // Skip open parenthesis
       while (tokens[i] && tokens[i]!.type !== "closeParen") {
-        args.push(parseFunctor());
+        args.push(parseTerm());
         if (tokens[i]?.type === "comma") i++; // Skip comma
       }
       if (tokens[i]?.type === "closeParen")
@@ -52,7 +60,8 @@ export function parseToKnowledgeBase(tokens: Token[]): AST.KnowledgeBase {
   function parseBody(): AST.Functor {
     const args: AST.Functor[] = [];
     while (i < tokens.length && tokens[i]!.type !== "period") {
-      const functor = parseFunctor();
+      const functor = parseTerm();
+      if (functor._tag !== "Functor") throw new Error("idk");
       args.push(functor);
       // Check for the comma separator between functors in the body
       if (tokens[i]?.type === "comma") i++; // Skip comma
@@ -68,21 +77,26 @@ export function parseToKnowledgeBase(tokens: Token[]): AST.KnowledgeBase {
 export function parseToQuery(tokens: Token[]): AST.Query {
   let i = 0;
 
-  const goal = parseFunctor();
+  const goal = parseTerm();
+  if (goal._tag !== "Functor") throw new Error("idk");
   return { _tag: "Query", goal };
 
-  function parseFunctor(): AST.Functor {
+  function parseTerm(): AST.Term {
     const nextToken = tokens[i];
     if (nextToken?.type !== "identifier")
       throw new PrologError("Expected an identifier");
     const name = nextToken.value;
-    const args: AST.Functor[] = [];
+    const args: AST.Term[] = [];
     i++; // Move past the functor name
+
+    if (isCapitalzied(name)) {
+      return { _tag: "Variable", name };
+    }
 
     if (tokens[i]?.type === "openParen") {
       i++; // Skip open parenthesis
       while (tokens[i] && tokens[i]!.type !== "closeParen") {
-        args.push(parseFunctor());
+        args.push(parseTerm());
         if (tokens[i]?.type === "comma") i++; // Skip comma
       }
       if (tokens[i]?.type === "closeParen")
