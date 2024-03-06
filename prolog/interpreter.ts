@@ -38,21 +38,59 @@ class InterpreterImpl implements Interpreter {
   }
 
   public query(query: AST.Query): QueryResult {
-    return this.evaluateFunctor(query.goal, new Map());
+    const allVariables = this.getAllVariablesInTerm(query.goal);
+    const result = this.evaluateFunctor(query.goal, new Map());
+    console.log(result);
+    if (result.success) {
+      const unusedVariables = result.bindings
+        .flatMap((binding) => [...binding.keys()])
+        .filter((k) => !allVariables.includes(k));
+      for (const unusedVariable of unusedVariables) {
+        for (const binding of result.bindings) {
+          binding.delete(unusedVariable);
+        }
+      }
+
+      // @ts-expect-error I know theres a million better ways to do this but idc
+      result.bindings = result.bindings.filter((binding) => binding.size > 0);
+    }
+
+    return result;
+  }
+
+  private getAllVariablesInTerm(term: AST.Term): string[] {
+    if (term._tag === "Variable") {
+      return [term.name];
+    } else {
+      return term.arguments.flatMap((term2) => {
+        if (term2._tag === "Variable") {
+          return [term2.name];
+        } else {
+          return term2.arguments.flatMap((term3) =>
+            this.getAllVariablesInTerm(term3),
+          );
+        }
+      });
+    }
   }
 
   private evaluateFunctor(
     functor: AST.Functor,
     bindings: Bindings,
   ): QueryResult {
-    const builtIn = this.handleBuiltIn(functor);
+    console.log("EVALUATEFUNCTOR", functor.name);
+    const builtIn = this.handleBuiltIn(functor, bindings);
     if (builtIn) {
       return builtIn.success
         ? QueryResult(true, bindings.size === 0 ? [] : [bindings])
         : QueryResult(false);
     }
 
-    const rules = this.rules.filter((rule) => rule.head.name === functor.name);
+    const rules = this.rules.filter(
+      (rule) =>
+        rule.head.name === functor.name &&
+        rule.head.arguments.length === functor.arguments.length,
+    );
 
     if (rules.length === 0) {
       throw new UnknownFunctorError(functor);
@@ -97,13 +135,30 @@ class InterpreterImpl implements Interpreter {
     );
   }
 
-  private handleBuiltIn(functor: AST.Functor): QueryResult | null {
+  private handleBuiltIn(
+    functor: AST.Functor,
+    bindings: Bindings,
+  ): QueryResult | null {
     switch (functor.name) {
+      // represents a 'rule'
       case "true": {
-        if (functor.arguments.length !== 0) {
-          return null;
+        if (functor.arguments.length === 0) {
+          return QueryResult(true);
         }
-        return QueryResult(true);
+        break;
+      }
+      // the 'and' functor
+      case ",": {
+        if (
+          functor.arguments.every(
+            (arg) =>
+              arg._tag === "Functor" &&
+              this.evaluateFunctor(arg, bindings).success,
+          )
+        ) {
+          return QueryResult(true);
+        }
+        break;
       }
     }
     return null;

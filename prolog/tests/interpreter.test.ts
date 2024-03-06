@@ -1,7 +1,6 @@
 import { describe, it, expect } from "bun:test";
 import type { KnowledgeBase, Query } from "../ast";
 import { loadInterpreter } from "../interpreter";
-import { UnknownFunctorError } from "../error";
 
 describe("interepreter", () => {
   it("can evaluate arity 0 exists", () => {
@@ -34,7 +33,11 @@ describe("interepreter", () => {
 
     const interpreter = loadInterpreter(knowledgeBase);
     const result = interpreter.query(query);
-    expect(result).toEqual({ _tag: "QueryResult", success: true, bindings: [] });
+    expect(result).toEqual({
+      _tag: "QueryResult",
+      success: true,
+      bindings: [],
+    });
   });
   it("can evaluate arity 1 exists", () => {
     const knowledgeBase: KnowledgeBase = {
@@ -66,7 +69,11 @@ describe("interepreter", () => {
 
     const interpreter = loadInterpreter(knowledgeBase);
     const result = interpreter.query(query);
-    expect(result).toEqual({ _tag: "QueryResult", success: true, bindings: [] });
+    expect(result).toEqual({
+      _tag: "QueryResult",
+      success: true,
+      bindings: [],
+    });
   });
 
   it("can evaluate nested rules", () => {
@@ -111,7 +118,11 @@ describe("interepreter", () => {
         arguments: [{ _tag: "Functor", name: "bar", arguments: [] }],
       },
     });
-    expect(result).toEqual({ _tag: "QueryResult", success: true, bindings: [] });
+    expect(result).toEqual({
+      _tag: "QueryResult",
+      success: true,
+      bindings: [],
+    });
   });
 
   it("returns false when the query is not provable", () => {
@@ -295,6 +306,90 @@ describe("interepreter", () => {
         new Map([["X", { _tag: "Functor", name: "bar", arguments: [] }]]),
         new Map([["X", { _tag: "Functor", name: "baz", arguments: [] }]]),
       ],
+    });
+  });
+  it("can evaluate rules with 'and'", () => {
+    const knowledgeBase: KnowledgeBase = {
+      _tag: "KnowledgeBase",
+      rules: [
+        {
+          _tag: "Rule",
+          head: {
+            _tag: "Functor",
+            name: "baz",
+            arguments: [{ _tag: "Functor", name: "foo", arguments: [] }],
+          },
+          body: {
+            _tag: "Functor",
+            name: "true",
+            arguments: [],
+          },
+        },
+        {
+          _tag: "Rule",
+          head: {
+            _tag: "Functor",
+            name: "bar",
+            arguments: [{ _tag: "Functor", name: "foo", arguments: [] }],
+          },
+          body: {
+            _tag: "Functor",
+            name: "true",
+            arguments: [],
+          },
+        },
+        {
+          _tag: "Rule",
+          head: {
+            _tag: "Functor",
+            name: "both",
+            arguments: [{ _tag: "Variable", name: "W" }],
+          },
+          body: {
+            _tag: "Functor",
+            name: ",",
+            arguments: [
+              {
+                _tag: "Functor",
+                name: "bar",
+                arguments: [{ _tag: "Variable", name: "W" }],
+              },
+              {
+                _tag: "Functor",
+                name: "baz",
+                arguments: [{ _tag: "Variable", name: "W" }],
+              },
+            ],
+          },
+        },
+      ],
+    };
+
+    const interpreter = loadInterpreter(knowledgeBase);
+    const result1 = interpreter.query({
+      _tag: "Query",
+      goal: {
+        _tag: "Functor",
+        name: "both",
+        arguments: [{ _tag: "Functor", name: "foo", arguments: [] }],
+      },
+    });
+    expect(result1).toEqual({
+      _tag: "QueryResult",
+      success: true,
+      bindings: [],
+    });
+    const result2 = interpreter.query({
+      _tag: "Query",
+      goal: {
+        _tag: "Functor",
+        name: "both",
+        arguments: [{ _tag: "Functor", name: "notfoo", arguments: [] }],
+      },
+    });
+    expect(result2).toEqual({
+      _tag: "QueryResult",
+      success: false,
     });
   });
 });
