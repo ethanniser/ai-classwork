@@ -18,7 +18,7 @@ parent(alice, bill).
 parent(bob, carl).
 parent(bob, charlie).
 
-grandparent(C, M, D) :- parent(M, C), parent(D, C).
+parents(C, M, D) :- parent(M, C), parent(D, C).
 
 
 bar(foo).

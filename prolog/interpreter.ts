@@ -1,5 +1,6 @@
 import * as AST from "./ast";
 import { UnknownFunctorError } from "./error";
+import util from "node:util";
 
 type Bindings = Map<string, AST.Term>;
 
@@ -62,6 +63,18 @@ class InterpreterImpl implements Interpreter {
     }
   }
 
+  private resolveVariable(
+    variable: AST.Variable,
+    bindings: Bindings,
+  ): AST.Term {
+    const value = bindings.get(variable.name);
+    if (value && value._tag === "Variable") {
+      return this.resolveVariable(value, bindings);
+    } else {
+      return value ?? variable;
+    }
+  }
+
   // recursively resolves variables to their final value and strips all unused variables
   private cleanAndResolveVariables(
     query: AST.Query,
@@ -111,13 +124,10 @@ class InterpreterImpl implements Interpreter {
     }
   }
 
-  // TODO: figure out how to resolve variables within this function
   private evaluateFunctor(
     functor: AST.Functor,
     bindings: Bindings,
   ): QueryResult {
-    console.log("EVALUATEFUNCTOR", functor.name, bindings);
-    // this.resolveVariables(bindings);
     const builtIn = this.handleBuiltIn(functor, bindings);
     if (builtIn) {
       return builtIn.success
@@ -143,15 +153,11 @@ class InterpreterImpl implements Interpreter {
         functor.arguments,
         bindings,
       );
-      console.log("newBindings", newBindings);
       if (newBindings) {
         const result = this.evaluateFunctor(rule.body, newBindings);
-        console.log("EVALUATE BODY RESULTS", rule.body, newBindings, result);
         results.push(result); // Store the result
       }
     }
-
-    console.log("FUNCTOR RESULTS", functor.name, results);
 
     // If no successful matches were found, return failure
     if (results.length === 0) {
@@ -197,7 +203,6 @@ class InterpreterImpl implements Interpreter {
             arg._tag === "Functor" &&
             this.evaluateFunctor(arg, bindings).success,
         );
-        console.log("RESULTS", functor.arguments, bindings, results);
         if (results.every((x) => x)) {
           return QueryResult(true);
         } else {
@@ -218,8 +223,12 @@ class InterpreterImpl implements Interpreter {
     let bindings = this.cloneBindings(existingBindings);
 
     for (let i = 0; i < term1.length; i++) {
-      const t1 = term1[i]!;
-      const t2 = term2[i]!;
+      const t1p = term1[i]!;
+      const t2p = term2[i]!;
+      const t1 =
+        t1p._tag === "Variable" ? this.resolveVariable(t1p, bindings) : t1p;
+      const t2 =
+        t2p._tag === "Variable" ? this.resolveVariable(t2p, bindings) : t2p;
 
       if (t1._tag === "Variable" && t2._tag === "Variable") {
         if (t1.name === t2.name) {

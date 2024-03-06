@@ -469,4 +469,101 @@ describe("interepreter", () => {
       success: false,
     });
   });
+  it("complex , variable query", () => {
+    const knowledgeBase: KnowledgeBase = {
+      _tag: "KnowledgeBase",
+      rules: [
+        {
+          _tag: "Rule",
+          head: {
+            _tag: "Functor",
+            name: "parent",
+            arguments: [
+              { _tag: "Functor", name: "albert", arguments: [] },
+              { _tag: "Functor", name: "bob", arguments: [] },
+            ],
+          },
+          body: {
+            _tag: "Functor",
+            name: "true",
+            arguments: [],
+          },
+        },
+        {
+          _tag: "Rule",
+          head: {
+            _tag: "Functor",
+            name: "parent",
+            arguments: [
+              { _tag: "Functor", name: "alice", arguments: [] },
+              { _tag: "Functor", name: "bob", arguments: [] },
+            ],
+          },
+          body: {
+            _tag: "Functor",
+            name: "true",
+            arguments: [],
+          },
+        },
+        {
+          _tag: "Rule",
+          head: {
+            _tag: "Functor",
+            name: "parents",
+            arguments: [
+              { _tag: "Variable", name: "C" },
+              { _tag: "Variable", name: "M" },
+              { _tag: "Variable", name: "D" },
+            ],
+          },
+          body: {
+            _tag: "Functor",
+            name: ",",
+            arguments: [
+              {
+                _tag: "Functor",
+                name: "parent",
+                arguments: [
+                  { _tag: "Variable", name: "M" },
+                  { _tag: "Variable", name: "C" },
+                ],
+              },
+              {
+                _tag: "Functor",
+                name: "parent",
+                arguments: [
+                  { _tag: "Variable", name: "D" },
+                  { _tag: "Variable", name: "C" },
+                ],
+              },
+            ],
+          },
+        },
+      ],
+    };
+
+    const interpreter = loadInterpreter(knowledgeBase);
+    const result = interpreter.query({
+      _tag: "Query",
+      goal: {
+        _tag: "Functor",
+        name: "parents",
+        arguments: [
+          { _tag: "Functor", name: "bob", arguments: [] },
+          { _tag: "Variable", name: "A" },
+          { _tag: "Variable", name: "B" },
+        ],
+      },
+    });
+    expect(result).toEqual({
+      _tag: "QueryResult",
+      success: true,
+      bindings: [
+        new Map([
+          ["A", { _tag: "Functor", name: "alice", arguments: [] }],
+          ["B", { _tag: "Functor", name: "albert", arguments: [] }],
+        ]),
+      ],
+    });
+  });
 });
