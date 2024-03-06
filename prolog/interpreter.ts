@@ -38,10 +38,44 @@ class InterpreterImpl implements Interpreter {
   }
 
   public query(query: AST.Query): QueryResult {
-    const allVariables = this.getAllVariablesInTerm(query.goal);
     const result = this.evaluateFunctor(query.goal, new Map());
-    console.log(result);
+
+    return this.cleanAndResolveVariables(query, result);
+  }
+
+  private resolveVariables(binding: Bindings) {
+    for (const [key, value] of binding.entries()) {
+      if (value._tag === "Variable") {
+        resolve(key, value.name, binding);
+      }
+    }
+
+    function resolve(key: string, resolveTo: string, bindings: Bindings) {
+      const value = bindings.get(resolveTo);
+      if (!value) throw new Error("should be unreachable");
+      if (value._tag === "Functor") {
+        bindings.set(key, value);
+      } else {
+        // again a variable so recursively resolve
+        resolve(key, value.name, bindings);
+      }
+    }
+  }
+
+  // recursively resolves variables to their final value and strips all unused variables
+  private cleanAndResolveVariables(
+    query: AST.Query,
+    result: QueryResult,
+  ): QueryResult {
     if (result.success) {
+      // deeply resolve variables
+
+      for (const binding of result.bindings) {
+        this.resolveVariables(binding);
+      }
+
+      // strip unused variables
+      const allVariables = this.getAllVariablesInTerm(query.goal);
       const unusedVariables = result.bindings
         .flatMap((binding) => [...binding.keys()])
         .filter((k) => !allVariables.includes(k));
@@ -51,11 +85,14 @@ class InterpreterImpl implements Interpreter {
         }
       }
 
-      // @ts-expect-error I know theres a million better ways to do this but idc
-      result.bindings = result.bindings.filter((binding) => binding.size > 0);
+      return {
+        _tag: "QueryResult",
+        success: true,
+        bindings: result.bindings.filter((binding) => binding.size > 0),
+      };
+    } else {
+      return result;
     }
-
-    return result;
   }
 
   private getAllVariablesInTerm(term: AST.Term): string[] {
@@ -74,11 +111,13 @@ class InterpreterImpl implements Interpreter {
     }
   }
 
+  // TODO: figure out how to resolve variables within this function
   private evaluateFunctor(
     functor: AST.Functor,
     bindings: Bindings,
   ): QueryResult {
-    console.log("EVALUATEFUNCTOR", functor.name);
+    console.log("EVALUATEFUNCTOR", functor.name, bindings);
+    // this.resolveVariables(bindings);
     const builtIn = this.handleBuiltIn(functor, bindings);
     if (builtIn) {
       return builtIn.success
@@ -104,11 +143,15 @@ class InterpreterImpl implements Interpreter {
         functor.arguments,
         bindings,
       );
+      console.log("newBindings", newBindings);
       if (newBindings) {
         const result = this.evaluateFunctor(rule.body, newBindings);
+        console.log("EVALUATE BODY RESULTS", rule.body, newBindings, result);
         results.push(result); // Store the result
       }
     }
+
+    console.log("FUNCTOR RESULTS", functor.name, results);
 
     // If no successful matches were found, return failure
     if (results.length === 0) {
@@ -149,16 +192,17 @@ class InterpreterImpl implements Interpreter {
       }
       // the 'and' functor
       case ",": {
-        if (
-          functor.arguments.every(
-            (arg) =>
-              arg._tag === "Functor" &&
-              this.evaluateFunctor(arg, bindings).success,
-          )
-        ) {
+        const results = functor.arguments.map(
+          (arg) =>
+            arg._tag === "Functor" &&
+            this.evaluateFunctor(arg, bindings).success,
+        );
+        console.log("RESULTS", functor.arguments, bindings, results);
+        if (results.every((x) => x)) {
           return QueryResult(true);
+        } else {
+          return QueryResult(false);
         }
-        break;
       }
     }
     return null;
@@ -181,7 +225,7 @@ class InterpreterImpl implements Interpreter {
         if (t1.name === t2.name) {
           throw new Error("unable to handle reused variable name");
         } else {
-          bindings.set(t1.name, t2);
+          bindings.set(t2.name, t1);
         }
       } else if (t1._tag === "Variable" || t2._tag === "Variable") {
         const variable = t1._tag === "Variable" ? t1 : t2;

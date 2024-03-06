@@ -308,6 +308,70 @@ describe("interepreter", () => {
       ],
     });
   });
+  it("can calculate a nested variable query", () => {
+    const knowledgeBase: KnowledgeBase = {
+      _tag: "KnowledgeBase",
+      rules: [
+        {
+          _tag: "Rule",
+          head: {
+            _tag: "Functor",
+            name: "foo",
+            arguments: [{ _tag: "Functor", name: "bar", arguments: [] }],
+          },
+          body: {
+            _tag: "Functor",
+            name: "true",
+            arguments: [],
+          },
+        },
+        {
+          _tag: "Rule",
+          head: {
+            _tag: "Functor",
+            name: "foo",
+            arguments: [{ _tag: "Functor", name: "baz", arguments: [] }],
+          },
+          body: {
+            _tag: "Functor",
+            name: "true",
+            arguments: [],
+          },
+        },
+        {
+          _tag: "Rule",
+          head: {
+            _tag: "Functor",
+            name: "f",
+            arguments: [{ _tag: "Variable", name: "W" }],
+          },
+          body: {
+            _tag: "Functor",
+            name: "foo",
+            arguments: [{ _tag: "Variable", name: "W" }],
+          },
+        },
+      ],
+    };
+
+    const interpreter = loadInterpreter(knowledgeBase);
+    const result = interpreter.query({
+      _tag: "Query",
+      goal: {
+        _tag: "Functor",
+        name: "f",
+        arguments: [{ _tag: "Variable", name: "X" }],
+      },
+    });
+    expect(result).toEqual({
+      _tag: "QueryResult",
+      success: true,
+      bindings: [
+        new Map([["X", { _tag: "Functor", name: "bar", arguments: [] }]]),
+        new Map([["X", { _tag: "Functor", name: "baz", arguments: [] }]]),
+      ],
+    });
+  });
   it("can evaluate rules with 'and'", () => {
     const knowledgeBase: KnowledgeBase = {
       _tag: "KnowledgeBase",
@@ -318,6 +382,19 @@ describe("interepreter", () => {
             _tag: "Functor",
             name: "baz",
             arguments: [{ _tag: "Functor", name: "foo", arguments: [] }],
+          },
+          body: {
+            _tag: "Functor",
+            name: "true",
+            arguments: [],
+          },
+        },
+        {
+          _tag: "Rule",
+          head: {
+            _tag: "Functor",
+            name: "baz",
+            arguments: [{ _tag: "Functor", name: "notfoo", arguments: [] }],
           },
           body: {
             _tag: "Functor",

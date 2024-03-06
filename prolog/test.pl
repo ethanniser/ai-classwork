@@ -19,3 +19,9 @@ parent(bob, carl).
 parent(bob, charlie).
 
 grandparent(C, M, D) :- parent(M, C), parent(D, C).
+
+
+bar(foo).
+bar(notfoo).
+baz(foo).
+both(W) :- bar(W), baz(W).
