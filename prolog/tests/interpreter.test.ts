@@ -469,7 +469,7 @@ describe("interepreter", () => {
       success: false,
     });
   });
-  it("complex , variable query", () => {
+  it("complex , variable query 1", () => {
     const knowledgeBase: KnowledgeBase = {
       _tag: "KnowledgeBase",
       rules: [
@@ -563,6 +563,115 @@ describe("interepreter", () => {
           ["A", { _tag: "Functor", name: "alice", arguments: [] }],
           ["B", { _tag: "Functor", name: "albert", arguments: [] }],
         ]),
+      ],
+    });
+  });
+
+  it("complex , variable query 2", () => {
+    const knowledgeBase: KnowledgeBase = {
+      _tag: "KnowledgeBase",
+      rules: [
+        {
+          _tag: "Rule",
+          head: {
+            _tag: "Functor",
+            name: "parent",
+            arguments: [
+              { _tag: "Functor", name: "albert", arguments: [] },
+              { _tag: "Functor", name: "bob", arguments: [] },
+            ],
+          },
+          body: {
+            _tag: "Functor",
+            name: "true",
+            arguments: [],
+          },
+        },
+        {
+          _tag: "Rule",
+          head: {
+            _tag: "Functor",
+            name: "parent",
+            arguments: [
+              { _tag: "Functor", name: "bob", arguments: [] },
+              { _tag: "Functor", name: "carl", arguments: [] },
+            ],
+          },
+          body: {
+            _tag: "Functor",
+            name: "true",
+            arguments: [],
+          },
+        },
+        {
+          _tag: "Rule",
+          head: {
+            _tag: "Functor",
+            name: "grandparent",
+            arguments: [
+              { _tag: "Variable", name: "C" },
+              { _tag: "Variable", name: "G" },
+            ],
+          },
+          body: {
+            _tag: "Functor",
+            name: ",",
+            arguments: [
+              {
+                _tag: "Functor",
+                name: "parent",
+                arguments: [
+                  { _tag: "Variable", name: "P" },
+                  { _tag: "Variable", name: "C" },
+                ],
+              },
+              {
+                _tag: "Functor",
+                name: "parent",
+                arguments: [
+                  { _tag: "Variable", name: "G" },
+                  { _tag: "Variable", name: "P" },
+                ],
+              },
+            ],
+          },
+        },
+      ],
+    };
+
+    const interpreter = loadInterpreter(knowledgeBase);
+    const result1 = interpreter.query({
+      _tag: "Query",
+      goal: {
+        _tag: "Functor",
+        name: "grandparent",
+        arguments: [
+          { _tag: "Functor", name: "carl", arguments: [] },
+          { _tag: "Functor", name: "albert", arguments: [] },
+        ],
+      },
+    });
+    expect(result1).toEqual({
+      _tag: "QueryResult",
+      success: true,
+      bindings: [],
+    });
+    const result2 = interpreter.query({
+      _tag: "Query",
+      goal: {
+        _tag: "Functor",
+        name: "parent",
+        arguments: [
+          { _tag: "Functor", name: "carl", arguments: [] },
+          { _tag: "Variable", name: "A" },
+        ],
+      },
+    });
+    expect(result2).toEqual({
+      _tag: "QueryResult",
+      success: true,
+      bindings: [
+        new Map([["A", { _tag: "Functor", name: "albert", arguments: [] }]]),
       ],
     });
   });

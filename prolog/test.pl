@@ -19,7 +19,7 @@ parent(bob, carl).
 parent(bob, charlie).
 
 parents(C, M, D) :- parent(M, C), parent(D, C).
-
+grandparent(C, G) :- parent(P, C), parent(G, P).
 
 bar(foo).
 bar(notfoo).
