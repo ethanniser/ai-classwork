@@ -18,3 +18,6 @@ none
 - add numbers
 - add lists
 - add strings
+
+
+Parse with ohmjs? https://ohmjs.org/
