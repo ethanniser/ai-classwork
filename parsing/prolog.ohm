@@ -1,0 +1,9 @@
+Prolog {
+  Statement = (Rule | Functor) "."
+  
+  Functor = (Identifier | Variable) ("(" ListOf<Functor, ",">  ")")?
+  Rule = Functor ":-" ListOf<Functor, ",">
+    
+  Identifier = lower letter*
+  Variable = upper letter*
+}

@@ -1,0 +1,14 @@
+Parse {
+
+  Function = ReturnType FunctionName "(" Arguments ")" Body
+  
+  ReturnType = identifier
+  FunctionName = identifier
+  Arguments = ListOf<Argument, ",">
+  Argument = Type Variable
+  Type = identifier
+  Variable = identifier
+  Body = "{" any+
+
+  identifier = letter+
+}
