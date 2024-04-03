@@ -68,3 +68,6 @@ const LED: Griddler = {
     ],
   },
 };
+
+export { LED };
+export type { Color, CellState, GuideItem, Griddler, GriddlerGameState };
