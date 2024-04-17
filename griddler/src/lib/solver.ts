@@ -2,21 +2,27 @@ import type { Color, CellState, GuideItem, Griddler } from ".";
 import { ReadonlyArray } from "effect";
 import assert from "node:assert";
 
-function findAllRowCombinations(
+export function findAllRowCombinations(
   length: number,
   hints: readonly GuideItem[]
 ): CellState[][] {
-  return findAllRowCombinationsInner(length, [], hints);
+  return findAllRowCombinationsInner(
+    length,
+    new Array(length).fill("unentered"),
+    0,
+    hints
+  );
 }
 
 function findAllRowCombinationsInner(
   length: number,
-  // always contains mandatory 1 block spacer as last item, unless empty
-  startingArray: ReadonlyArray<CellState>,
+  lastArray: ReadonlyArray<CellState>,
+  // points to either start or index after mandatory 1 block spacer
+  nextStartIndex: number,
   remainingHints: ReadonlyArray<GuideItem>
 ): CellState[][] {
   console.log(arguments);
-  assert(startingArray.length <= length);
+  assert(nextStartIndex < length);
   // no more hints so no more combinations
   if (remainingHints.length === 0) {
     return [];
@@ -24,37 +30,18 @@ function findAllRowCombinationsInner(
 
   const nextHint = remainingHints[0];
   // not enough space to fit the next hint so no combonations
-  if (startingArray.length + nextHint.n > length) {
+  if (nextStartIndex + nextHint.n > length) {
     return [];
   }
 
   const numOfNextBlockPossibilities =
-    length - startingArray.length - nextHint.n + 1;
-  console.log(numOfNextBlockPossibilities);
+    length - (nextStartIndex + 1) - nextHint.n + 1;
 
-  return new Array({ length: numOfNextBlockPossibilities }).flatMap((_, i) => {
-    const spacer: CellState[] =
-      i === 0 ? [] : ReadonlyArray.makeBy(i, () => "empty");
-    const nextBlock: CellState[] = ReadonlyArray.makeBy(
-      nextHint.n,
-      () => nextHint.color
-    );
-    const nextArray: CellState[] = ReadonlyArray.appendAll(
-      startingArray,
-      ReadonlyArray.flatten([spacer, nextBlock])
-    );
-    console.log({
-      i,
-      spacer,
-      nextBlock,
-      nextArray,
-    });
-    return findAllRowCombinationsInner(
-      length,
-      nextArray,
-      remainingHints.slice(1)
-    );
-  });
+  const finalArray: CellState[][] = [];
+
+  for (let i = 0; i < numOfNextBlockPossibilities; i++) {
+    //TODO
+  }
+
+  return finalArray;
 }
-
-console.log(findAllRowCombinations(5, [{ color: "black", n: 3 }]));
