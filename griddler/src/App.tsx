@@ -1,5 +1,5 @@
 import { cn } from "./lib/utils";
-import { CellState, Griddler, GriddlerGameState, LED } from "./lib";
+import { CellState, Griddler, GriddlerGameState, LED } from "./solver";
 import { create, useStore } from "zustand";
 import { createContext, useContext, useRef } from "react";
 
