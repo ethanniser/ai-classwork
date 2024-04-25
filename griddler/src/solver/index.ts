@@ -14,26 +14,26 @@ interface GuideItem {
 }
 
 interface Griddler {
-  width: number;
-  height: number;
-  solutionGrid: Readonly2DArray<Color>;
-  guides: {
+  readonly width: number;
+  readonly height: number;
+  readonly solutionGrid: Readonly2DArray<Color>;
+  readonly guides: {
     // left to right, then top to bottom
-    top: Readonly2DArray<GuideItem>;
+    readonly top: Readonly2DArray<GuideItem>;
     // top to bottom, then right to left
-    left: Readonly2DArray<GuideItem>;
+    readonly left: Readonly2DArray<GuideItem>;
   };
 }
 
 export class GriddlerImpl implements Griddler {
-  public width: number;
-  public height: number;
-  public solutionGrid: Readonly2DArray<Color>;
-  public guides: {
+  public readonly width: number;
+  public readonly height: number;
+  public readonly solutionGrid: Readonly2DArray<Color>;
+  public readonly guides: {
     // left to right, then top to bottom
-    top: Readonly2DArray<GuideItem>;
+    readonly top: Readonly2DArray<GuideItem>;
     // top to bottom, then right to left
-    left: Readonly2DArray<GuideItem>;
+    readonly left: Readonly2DArray<GuideItem>;
   };
 
   constructor(solutionGrid: Readonly2DArray<Color>) {
@@ -41,8 +41,8 @@ export class GriddlerImpl implements Griddler {
     this.width = solutionGrid[0].length;
     this.height = solutionGrid.length;
     this.guides = {
-      top: solutionGrid.map((row) => GriddlerImpl.generateGuide(row)),
-      left: transposeArray(solutionGrid).map((row) =>
+      left: solutionGrid.map((row) => GriddlerImpl.generateGuide(row)),
+      top: transposeMatrix(solutionGrid).map((row) =>
         GriddlerImpl.generateGuide(row)
       ),
     };
@@ -78,14 +78,21 @@ export class GriddlerImpl implements Griddler {
         while (i + count < series.length && series[i + count] === color) {
           count++;
         }
+        i += count - 1;
         result.push({ n: count, color });
       }
     }
     return result;
   }
+
+  public toJSON(): string {
+    return JSON.stringify(this.solutionGrid);
+  }
 }
 
-function transposeArray<T>(array: Readonly2DArray<T>): Readonly2DArray<T> {
+export function transposeMatrix<T>(
+  array: Readonly2DArray<T>
+): Readonly2DArray<T> {
   assert(array.length > 0);
   const result: T[][] = [];
   for (let i = 0; i < array[0].length; i++) {
