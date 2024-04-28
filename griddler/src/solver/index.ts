@@ -1,31 +1,19 @@
 import * as S from "@effect/schema/Schema";
 import assert from "node:assert";
 
-type Color = number;
+export type Color = number;
 // -1 = unentered
 // 0 = empty
 // integer = color up to client
 
-type Readonly2DArray<T> = ReadonlyArray<ReadonlyArray<T>>;
+export type Readonly2DArray<T> = ReadonlyArray<ReadonlyArray<T>>;
 
-interface GuideItem {
+export interface GuideItem {
   n: number;
   color: Color;
 }
 
-interface Griddler {
-  readonly width: number;
-  readonly height: number;
-  readonly solutionGrid: Readonly2DArray<Color>;
-  readonly guides: {
-    // left to right, then top to bottom
-    readonly top: Readonly2DArray<GuideItem>;
-    // top to bottom, then right to left
-    readonly left: Readonly2DArray<GuideItem>;
-  };
-}
-
-export class GriddlerImpl implements Griddler {
+export class Griddler {
   public readonly width: number;
   public readonly height: number;
   public readonly solutionGrid: Readonly2DArray<Color>;
@@ -41,14 +29,14 @@ export class GriddlerImpl implements Griddler {
     this.width = solutionGrid[0].length;
     this.height = solutionGrid.length;
     this.guides = {
-      left: solutionGrid.map((row) => GriddlerImpl.generateGuide(row)),
+      left: solutionGrid.map((row) => Griddler.generateGuide(row)),
       top: transposeMatrix(solutionGrid).map((row) =>
-        GriddlerImpl.generateGuide(row)
+        Griddler.generateGuide(row)
       ),
     };
   }
 
-  static fromJSON(json: string): GriddlerImpl {
+  static fromJSON(json: string): Griddler {
     const schema = S.Number.pipe(
       S.filter((x) => x >= 0 && x < 100),
       S.Array,
@@ -57,7 +45,16 @@ export class GriddlerImpl implements Griddler {
     );
 
     const result = S.decodeSync(schema)(json);
-    return new GriddlerImpl(result);
+    return new Griddler(result);
+  }
+
+  public satisfiesGuides(): boolean {
+    throw new Error("Not implemented");
+  }
+
+  public copyToEmpty(): Griddler {
+    const newGrid = this.solutionGrid.map((row) => row.map(() => -1));
+    return new Griddler(newGrid);
   }
 
   public getRow(row: number): ReadonlyArray<Color> {
