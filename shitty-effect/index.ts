@@ -152,7 +152,7 @@ const spinInterval = (id: number, initial: number = 0) =>
     }
   });
 
-new Fiber(spinInterval(1, 3)).run();
+new Fiber(spinInterval(1)).run();
 new Fiber(spinInterval(2, 500)).run();
 new Fiber(asyncInterval(3, 2000)).run();
 
