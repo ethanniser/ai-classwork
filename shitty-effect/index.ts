@@ -1,7 +1,7 @@
 import { pipe } from "effect";
 import { dual } from "effect/Function";
 
-type IO<A> = SyncOp<A> | AsyncOp<A> | FlatMap<A> | All<A> | Gen<A>;
+type IO<A> = SyncOp<A> | AsyncOp<A> | FlatMap<A> | Gen<A>;
 
 class SyncOp<A> {
   readonly _tag = "SyncOp";
@@ -28,13 +28,6 @@ class Gen<A> {
   constructor(public readonly gen: () => Generator<IO<any>, A, any>) {}
 }
 
-import { Effect } from "effect";
-class All<A> {
-  readonly _A!: () => A;
-  readonly _tag = "All";
-  constructor(public readonly ios: IO<unknown>[]) {}
-}
-
 function sync<A>(op: () => A): IO<A> {
   return new SyncOp(op);
 }
@@ -53,10 +46,6 @@ const flatMap: {
 
 function gen<A>(gen: () => Generator<IO<any>, A, any>): IO<A> {
   return new Gen(gen);
-}
-
-function all<A>(ios: IO<A>[]): IO<A[]> {
-  return new All(ios);
 }
 
 let idCounter = 0;
