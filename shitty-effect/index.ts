@@ -48,18 +48,15 @@ function gen<A>(gen: () => Generator<IO<any>, A, any>): IO<A> {
   return new Gen(gen);
 }
 
-let idCounter = 0;
 class Fiber<A> {
   private continuationStack: Array<FlatMap<any> | Generator<any>> = [];
   private currentOperation: IO<any>;
   private onDone: (a: A) => void;
   private hasExited: boolean = false;
-  private id: number;
 
   constructor(startOp: IO<A>, onDone?: (a: A) => void) {
     this.currentOperation = startOp;
     this.onDone = onDone ?? (() => {});
-    this.id = idCounter++;
   }
 
   public run(): void {
