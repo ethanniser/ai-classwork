@@ -132,23 +132,18 @@ class Fiber<A> {
   }
 }
 
-const asyncInterval = (id: number, ms: number) => {
-  let i = 0;
-  const interval: IO<never> = pipe(
-    sync(() => {
-      console.log(`[${id}] interval ${i++}`);
-    }),
-    flatMap(() =>
-      async(() => new Promise((resolve) => setTimeout(resolve, ms)))
-    ),
-    flatMap(() => interval)
-  );
-  return interval;
-};
-
-const spinInterval = (id: number) =>
+const asyncInterval = (id: number, ms: number) =>
   gen(function* () {
     let i = 0;
+    while (true) {
+      yield sync(() => console.log(`[${id}] interval ${i++}`));
+      yield async(() => new Promise((resolve) => setTimeout(resolve, ms)));
+    }
+  });
+
+const spinInterval = (id: number, initial: number = 0) =>
+  gen(function* () {
+    let i = initial;
     while (true) {
       yield sync(() => i++);
       if (i % 1000 === 0) {
@@ -157,6 +152,16 @@ const spinInterval = (id: number) =>
     }
   });
 
-new Fiber(spinInterval(1)).run();
-new Fiber(spinInterval(2)).run();
+new Fiber(spinInterval(1, 3)).run();
+new Fiber(spinInterval(2, 500)).run();
 new Fiber(asyncInterval(3, 2000)).run();
+
+// const program = gen(function* () {
+//   const res: Response = yield async(() =>
+//     fetch("https://jsonplaceholder.typicode.com/todos/1")
+//   );
+//   const text: string = yield async(() => res.text());
+//   yield sync(() => console.log(text));
+// });
+
+// new Fiber(program).run();
