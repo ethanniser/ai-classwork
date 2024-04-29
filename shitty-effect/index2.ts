@@ -1,7 +1,7 @@
 import { pipe } from "effect";
 import { dual } from "effect/Function";
 
-type IO<A> = SyncOp<A> | AsyncOp<A> | FlatMap<A> | All<A>;
+type IO<A> = SyncOp<A> | AsyncOp<A> | FlatMap<A> | All<A> | Gen<A>;
 
 class SyncOp<A> {
   readonly _tag = "SyncOp";
@@ -22,6 +22,13 @@ class FlatMap<A> {
   ) {}
 }
 
+class Gen<A> {
+  readonly _A!: () => A;
+  readonly _tag = "Gen";
+  constructor(public readonly gen: () => Generator<IO<any>, A, any>) {}
+}
+
+import { Effect } from "effect";
 class All<A> {
   readonly _A!: () => A;
   readonly _tag = "All";
@@ -44,21 +51,25 @@ const flatMap: {
   <A, B>(io: IO<A>, f: (a: A) => IO<B>): IO<B> => new FlatMap(io, f as any)
 );
 
+function gen<A>(gen: () => Generator<IO<any>, A, any>): IO<A> {
+  return new Gen(gen);
+}
+
 function all<A>(ios: IO<A>[]): IO<A[]> {
   return new All(ios);
 }
 
 let idCounter = 0;
 class Fiber<A> {
-  private continuationStack: Array<(a: any) => IO<any>> = [];
+  private continuationStack: Array<FlatMap<any> | Generator<any>> = [];
   private currentOperation: IO<any>;
   private onDone: (a: A) => void;
   private hasExited: boolean = false;
   private id: number;
 
-  constructor(startOp: IO<A>, onDone: (a: A) => void) {
+  constructor(startOp: IO<A>, onDone?: (a: A) => void) {
     this.currentOperation = startOp;
-    this.onDone = onDone;
+    this.onDone = onDone ?? (() => {});
     this.id = idCounter++;
   }
 
@@ -83,10 +94,24 @@ class Fiber<A> {
         }
         case "FlatMap": {
           const flatMapOp = this.currentOperation;
-          this.continuationStack.push(flatMapOp.f);
+          this.continuationStack.push(flatMapOp);
           this.currentOperation = flatMapOp.io;
           break;
         }
+        case "Gen": {
+          const genOp = this.currentOperation;
+          const gen = genOp.gen();
+          const next = gen.next();
+          if (next.done) {
+            this.advance(next.value);
+          } else {
+            this.continuationStack.push(gen);
+            this.currentOperation = next.value;
+          }
+          break;
+        }
+        default:
+          throw new Error("Unsupported operation");
       }
       steps++;
     }
@@ -94,13 +119,26 @@ class Fiber<A> {
     if (!this.hasExited) {
       // Yield execution after 100 steps
       setImmediate(() => this.run());
+      // setTimeout(() => this.run(), 0);
     }
   }
 
   private advance(value: any): void {
     if (this.continuationStack.length > 0) {
-      const next = this.continuationStack.pop();
-      this.currentOperation = next!(value);
+      const cont = this.continuationStack.pop()!;
+      // this.currentOperation = next!(value);
+      if (cont instanceof FlatMap) {
+        this.currentOperation = cont.f(value);
+      } else {
+        // gen
+        const next = cont.next(value);
+        if (next.done) {
+          this.advance(next.value);
+        } else {
+          this.continuationStack.push(cont);
+          this.currentOperation = next.value;
+        }
+      }
     } else {
       // No more continuations, call final handler
       this.hasExited = true;
@@ -109,7 +147,7 @@ class Fiber<A> {
   }
 }
 
-const makeInterval = (id: number, ms: number) => {
+const asyncInterval = (id: number, ms: number) => {
   let i = 0;
   const interval: IO<never> = pipe(
     sync(() => {
@@ -123,7 +161,17 @@ const makeInterval = (id: number, ms: number) => {
   return interval;
 };
 
-const fiber1 = new Fiber(makeInterval(1, 500), () => {}).run();
-const fiber2 = new Fiber(makeInterval(2, 500), () => {}).run();
+const spinInterval = (id: number) =>
+  gen(function* () {
+    let i = 0;
+    while (true) {
+      yield sync(() => i++);
+      if (i % 1000 === 0) {
+        yield sync(() => console.log(`[${id}] count: ${i}`));
+      }
+    }
+  });
 
-await new Promise((resolve) => setTimeout(resolve, 1000));
+new Fiber(spinInterval(1)).run();
+new Fiber(spinInterval(2)).run();
+new Fiber(asyncInterval(3, 2000)).run();
