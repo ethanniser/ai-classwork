@@ -23,7 +23,6 @@ class FlatMap<A> {
 }
 
 class Gen<A> {
-  readonly _A!: () => A;
   readonly _tag = "Gen";
   constructor(public readonly gen: () => Generator<IO<any>, A, any>) {}
 }
