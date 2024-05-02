@@ -6,6 +6,7 @@ import {
   transposeMatrix,
 } from ".";
 import assert from "node:assert";
+import { Array } from "effect";
 
 // griddler should be passed with empty solution grid
 export function solve(griddler: Griddler): Griddler {
@@ -25,29 +26,49 @@ export function solve(griddler: Griddler): Griddler {
 export function allPermutations(
   row: ReadonlyArray<Color>,
   hints: ReadonlyArray<GuideItem>
-): Readonly2DArray<Color> {
+): Set<Color[]> {
+  if (hints.length === 0) {
+    return new Set();
+  }
+
   const hasExistingInfo = hints.every((x) => x.color === -1);
   if (hasExistingInfo) {
     throw new Error("Not implemented");
   }
 
-  const permutations: Readonly2DArray<Color> = [];
-  throw new Error("idk");
+  const permutations: Set<Color[]> = new Set();
+  if (hints.length > 1) {
+    throw new Error("Not implemented");
+  }
+
+  const hint = hints[0];
+  // the number of spaces
+  const num = row.length - hint.n + 1;
+  for (let i = 0; i < num; i++) {
+    const newArray: Color[] = Array.copy(row);
+    for (let j = i; j < i + hint.n; j++) {
+      newArray[j] = hint.color;
+    }
+    permutations.add(newArray);
+  }
+  return permutations;
 }
 
 /** null means no intersection, anything is else is an intersection */
 export function findIntersections(
-  rows: Readonly2DArray<Color>
+  rows: Set<Color[]>
 ): ReadonlyArray<Color | null> {
+  const rowArr = Array.fromIterable(rows.values());
+
   // assert all rows are the same length
-  const length = rows[0].length;
-  for (let i = 1; i < rows.length; i++) {
-    assert(rows[i].length === length);
+  const length = rowArr[0].length;
+  for (let i = 1; i < rowArr.length; i++) {
+    assert(rowArr[i].length === length);
   }
 
   const arr: Array<Color | null> = [];
 
-  const switched = transposeMatrix(rows);
+  const switched = transposeMatrix(rowArr);
   for (const col of switched) {
     const first = col[0];
     const allSame = col.every((x) => x === first);
