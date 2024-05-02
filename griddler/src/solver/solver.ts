@@ -1,8 +1,14 @@
-import { Color, Griddler, GuideItem, Readonly2DArray } from ".";
+import {
+  Color,
+  Griddler,
+  GuideItem,
+  Readonly2DArray,
+  transposeMatrix,
+} from ".";
 import assert from "node:assert";
 
 // griddler should be passed with empty solution grid
-function solve(griddler: Griddler): Griddler {
+export function solve(griddler: Griddler): Griddler {
   let stuck = false;
 
   while (!stuck || !griddler.satisfiesGuides()) {
@@ -15,15 +21,42 @@ function solve(griddler: Griddler): Griddler {
   return griddler;
 }
 
-function allPermutations(
+/** Row may contain existing information, or be fully unentered */
+export function allPermutations(
   row: ReadonlyArray<Color>,
   hints: ReadonlyArray<GuideItem>
 ): Readonly2DArray<Color> {
-  throw new Error("Not implemented");
+  const hasExistingInfo = hints.every((x) => x.color === -1);
+  if (hasExistingInfo) {
+    throw new Error("Not implemented");
+  }
+
+  const permutations: Readonly2DArray<Color> = [];
+  throw new Error("idk");
 }
 
-function findIntersections(
+/** null means no intersection, anything is else is an intersection */
+export function findIntersections(
   rows: Readonly2DArray<Color>
-): Readonly2DArray<Color> {
-  throw new Error("Not implemented");
+): ReadonlyArray<Color | null> {
+  // assert all rows are the same length
+  const length = rows[0].length;
+  for (let i = 1; i < rows.length; i++) {
+    assert(rows[i].length === length);
+  }
+
+  const arr: Array<Color | null> = [];
+
+  const switched = transposeMatrix(rows);
+  for (const col of switched) {
+    const first = col[0];
+    const allSame = col.every((x) => x === first);
+    if (allSame) {
+      arr.push(first);
+    } else {
+      arr.push(null);
+    }
+  }
+
+  return arr;
 }
